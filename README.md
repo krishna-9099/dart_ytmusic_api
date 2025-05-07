@@ -74,6 +74,7 @@ The following methods are available in the `YTMusic` class:
 - `getSong(videoId: String)`: Retrieves detailed information about a song given its video ID.
 - `getVideo(videoId: String)`: Retrieves detailed information about a video given its video ID.
 - `getLyrics(videoId: String)`: Retrieves the lyrics of a song given its video ID.
+- `getTimedLyrics(String videoId)`: Retrieves the timed lyrics (lyrics synchronized with audio playback times) for a song given its video ID. 
 - `getArtist(artistId: String)`: Retrieves detailed information about an artist given its artist ID.
 - `getAlbum(albumId: String)`: Retrieves detailed information about an album given its album ID.
 - `getPlaylist(playlistId: String)`: Retrieves detailed information about a playlist given its playlist ID.

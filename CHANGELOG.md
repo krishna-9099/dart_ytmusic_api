@@ -1,3 +1,8 @@
+## 1.1.0
+
+**New Feature**
+- getTimedLyrics(String videoId): New method to retrieve timed lyrics for a song. This allows developers to access lyrics synchronized with audio playback times.
+
 ## 1.0.8
 **Fixes**
 - Fix search method: fixed search method returns empty results.
