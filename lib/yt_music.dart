@@ -389,7 +389,11 @@ class YTMusic {
     final timedLyrics =
         traverse(lyricsData, ['contents', 'type', 'lyricsData']);
 
-    if (timedLyrics == null || timedLyrics?['timedLyricsData'] == null) {
+    if (timedLyrics == null) {
+      return null;
+    }
+
+    if (timedLyrics is List) {
       return null;
     }
 
