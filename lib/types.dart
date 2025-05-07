@@ -1,3 +1,98 @@
+class ClientRequestOptions {
+  final String? clientName;
+  final String? clientVersion;
+
+  ClientRequestOptions({
+    this.clientName,
+    this.clientVersion,
+  });
+}
+
+class CueRangeMetadata {
+  final String id;
+
+  CueRangeMetadata({required this.id});
+
+  factory CueRangeMetadata.fromMap(Map<String, dynamic> json) {
+    return CueRangeMetadata(
+      id: json['id'] as String,
+    );
+  }
+
+  @override
+  String toString() => 'CueRangeMetadata(id: $id)';
+}
+
+class CueRange {
+  final int startTimeMilliseconds;
+  final int endTimeMilliseconds;
+  final CueRangeMetadata metadata;
+
+  CueRange({
+    required this.startTimeMilliseconds,
+    required this.endTimeMilliseconds,
+    required this.metadata,
+  });
+
+  factory CueRange.fromMap(Map<String, dynamic> json) {
+    return CueRange(
+      startTimeMilliseconds: int.parse(json['startTimeMilliseconds'] as String),
+      endTimeMilliseconds: int.parse(json['endTimeMilliseconds'] as String),
+      metadata:
+          CueRangeMetadata.fromMap(json['metadata'] as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  String toString() =>
+      'CueRange(startTimeMilliseconds: $startTimeMilliseconds, endTimeMilliseconds: $endTimeMilliseconds, metadata: $metadata)';
+}
+
+class TimedLyricsData {
+  final String? lyricLine;
+  final CueRange? cueRange;
+
+  TimedLyricsData({this.lyricLine, required this.cueRange});
+
+  factory TimedLyricsData.fromMap(Map<String, dynamic> json) {
+    return TimedLyricsData(
+      lyricLine: json['lyricLine'] as String?,
+      cueRange: json['cueRange'] == null
+          ? null
+          : CueRange.fromMap(json['cueRange'] as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  String toString() =>
+      'TimedLyricsData(lyricLine: $lyricLine, cueRange: $cueRange)';
+}
+
+class TimedLyricsRes {
+  final List<TimedLyricsData> timedLyricsData;
+  final String sourceMessage;
+
+  TimedLyricsRes({
+    required this.timedLyricsData,
+    required this.sourceMessage,
+  });
+
+  factory TimedLyricsRes.fromMap(Map<String, dynamic> map) {
+    return TimedLyricsRes(
+      timedLyricsData: List<TimedLyricsData>.from(
+        (map['timedLyricsData'] as List).map<TimedLyricsData>(
+          (x) => TimedLyricsData.fromMap(x as Map<String, dynamic>),
+        ),
+      ),
+      sourceMessage: map['sourceMessage'] as String,
+    );
+  }
+
+  @override
+  String toString() =>
+      'TimedLyricsRes(timedLyricsData: $timedLyricsData, sourceMessage: $sourceMessage)';
+}
+
 class ThumbnailFull {
   final String url;
   final int width;

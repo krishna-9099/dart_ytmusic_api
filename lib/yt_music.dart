@@ -131,6 +131,7 @@ class YTMusic {
     String endpoint, {
     Map<String, dynamic> body = const {},
     Map<String, String> query = const {},
+    ClientRequestOptions? options,
   }) async {
     final headers = <String, String>{
       ...dio.options.headers,
@@ -159,8 +160,10 @@ class YTMusic {
           "context": {
             "capabilities": {},
             "client": {
-              "clientName": config['INNERTUBE_CLIENT_NAME'],
-              "clientVersion": config['INNERTUBE_CLIENT_VERSION'],
+              "clientName":
+                  options?.clientName ?? config['INNERTUBE_CLIENT_NAME'],
+              "clientVersion":
+                  options?.clientVersion ?? config['INNERTUBE_CLIENT_VERSION'],
               "experimentIds": [],
               "experimentsToken": "",
               "gl": config['GL'],
@@ -365,6 +368,32 @@ class YTMusic {
         .split("\n")
         .where((element) => element.isNotEmpty)
         .join("\n");
+  }
+
+  Future<TimedLyricsRes?> getTimedLyrics(String videoId) async {
+    if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
+      throw Exception("Invalid videoId");
+    }
+
+    final data = await constructRequest("next", body: {"videoId": videoId});
+    final browseId =
+        traverse(traverseList(data, ["tabs", "tabRenderer"])[1], ["browseId"]);
+
+    final lyricsData = await constructRequest(
+      "browse",
+      body: {"browseId": browseId},
+      options: ClientRequestOptions(
+          clientName: androidClientName, clientVersion: androidClientVersion),
+    );
+
+    final timedLyrics =
+        traverse(lyricsData, ['contents', 'type', 'lyricsData']);
+
+    if (timedLyrics == null || timedLyrics?['timedLyricsData'] == null) {
+      return null;
+    }
+
+    return TimedLyricsRes.fromMap(timedLyrics);
   }
 
   /// Retrieves detailed information about an artist given its artist ID.
