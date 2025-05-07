@@ -16,3 +16,5 @@ enum PageType {
 }
 
 const String feMusicHome = "FEmusic_home";
+const String androidClientName = 'ANDROID_MUSIC';
+const String androidClientVersion = '8.05.50';
