@@ -1,3 +1,8 @@
+## 1.1.1
+
+**Fixes**
+- Fix exeption when timed lyrics is not found
+
 ## 1.1.0
 
 **New Feature**
