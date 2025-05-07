@@ -46,7 +46,7 @@ class AlbumBasic {
         name = map['name'] as String;
 }
 
-class SongDetailed {
+class SongDetailed implements SearchResult {
   final String type;
   final String videoId;
   final String name;
