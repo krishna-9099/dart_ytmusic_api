@@ -102,43 +102,37 @@ class YTMusic {
 
   /// Fetches the configuration data required for API requests.
   Future<void> fetchConfig() async {
-    try {
-      late final String html;
-      if (ytMusicHomeRawHtml != null) {
-        html = ytMusicHomeRawHtml!;
-      } else {
-        final response = await dio.get(
-          '/',
-        );
-        html = response.data;
-      }
-
-      if (html.contains('not optimized for your browser')) {
-        print('Browser compatibility error in HTML response');
-        throw Exception('Browser compatibility error detected');
-      }
-      config['VISITOR_DATA'] = _extractValue(html, r'"VISITOR_DATA":"(.*?)"');
-      config['INNERTUBE_CONTEXT_CLIENT_NAME'] = _extractValue(
-          html, r'"INNERTUBE_CONTEXT_CLIENT_NAME":\s*(-?\d+|\"(.*?)\")');
-      config['INNERTUBE_CLIENT_VERSION'] =
-          _extractValue(html, r'"INNERTUBE_CLIENT_VERSION":"(.*?)"');
-      config['DEVICE'] = _extractValue(html, r'"DEVICE":"(.*?)"');
-      config['PAGE_CL'] =
-          _extractValue(html, r'"PAGE_CL":\s*(-?\d+|\"(.*?)\")');
-      config['PAGE_BUILD_LABEL'] =
-          _extractValue(html, r'"PAGE_BUILD_LABEL":"(.*?)"');
-      config['INNERTUBE_API_KEY'] =
-          _extractValue(html, r'"INNERTUBE_API_KEY":"(.*?)"');
-      config['INNERTUBE_API_VERSION'] =
-          _extractValue(html, r'"INNERTUBE_API_VERSION":"(.*?)"');
-      config['INNERTUBE_CLIENT_NAME'] =
-          _extractValue(html, r'"INNERTUBE_CLIENT_NAME":"(.*?)"');
-      config['GL'] = _extractValue(html, r'"GL":"(.*?)"');
-      config['HL'] = _extractValue(html, r'"HL":"(.*?)"');
-    } catch (e) {
-      print('Error fetching data: ${e.toString()}');
-      exit(1);
+    late final String html;
+    if (ytMusicHomeRawHtml != null) {
+      html = ytMusicHomeRawHtml!;
+    } else {
+      final response = await dio.get(
+        '/',
+      );
+      html = response.data;
     }
+
+    if (html.contains('not optimized for your browser')) {
+      print('Browser compatibility error in HTML response');
+      throw Exception('Browser compatibility error detected');
+    }
+    config['VISITOR_DATA'] = _extractValue(html, r'"VISITOR_DATA":"(.*?)"');
+    config['INNERTUBE_CONTEXT_CLIENT_NAME'] = _extractValue(
+        html, r'"INNERTUBE_CONTEXT_CLIENT_NAME":\s*(-?\d+|\"(.*?)\")');
+    config['INNERTUBE_CLIENT_VERSION'] =
+        _extractValue(html, r'"INNERTUBE_CLIENT_VERSION":"(.*?)"');
+    config['DEVICE'] = _extractValue(html, r'"DEVICE":"(.*?)"');
+    config['PAGE_CL'] = _extractValue(html, r'"PAGE_CL":\s*(-?\d+|\"(.*?)\")');
+    config['PAGE_BUILD_LABEL'] =
+        _extractValue(html, r'"PAGE_BUILD_LABEL":"(.*?)"');
+    config['INNERTUBE_API_KEY'] =
+        _extractValue(html, r'"INNERTUBE_API_KEY":"(.*?)"');
+    config['INNERTUBE_API_VERSION'] =
+        _extractValue(html, r'"INNERTUBE_API_VERSION":"(.*?)"');
+    config['INNERTUBE_CLIENT_NAME'] =
+        _extractValue(html, r'"INNERTUBE_CLIENT_NAME":"(.*?)"');
+    config['GL'] = _extractValue(html, r'"GL":"(.*?)"');
+    config['HL'] = _extractValue(html, r'"HL":"(.*?)"');
   }
 
   /// Extracts a value from HTML using a regular expression.
