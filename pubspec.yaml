@@ -8,9 +8,9 @@ environment:
 
 dependencies:
   cookie_jar: ^4.0.8
-  dio: ^5.5.0+1
+  dio: ^5.8.0+1
   html: ^0.15.4
-  http: ^1.2.1
+  http: ^1.4.0
   intl: ^0.19.0
 
 dev_dependencies:
