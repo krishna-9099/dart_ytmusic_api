@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dart_ytmusic_api/enums.dart';
 import 'package:dart_ytmusic_api/parsers/album_parser.dart';
@@ -22,16 +24,19 @@ class YTMusic {
     cookieJar = CookieJar();
     config = {};
     dio = Dio(
-      BaseOptions(baseUrl: "https://music.youtube.com/", headers: {
-        "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Enconding": "gzip",
-        "Accept": "application/json, text/plain, */*",
-        "Content-Type": 'application/json',
-      }, extra: {
-        'withCredentials': true,
-      }),
+      BaseOptions(
+        baseUrl: "https://music.youtube.com/",
+        headers: {
+          "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36",
+          "Accept":
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        extra: {
+          'withCredentials': true,
+        },
+      ),
     );
 
     dio.interceptors.add(InterceptorsWrapper(
@@ -62,16 +67,19 @@ class YTMusic {
   late Map<String, String> config;
   late Dio dio;
   bool hasInitialized = false;
+  String? ytMusicHomeRawHtml;
 
   /// Initializes the YTMusic instance with provided cookies, geolocation, and language.
   Future<YTMusic> initialize({
     String? cookies,
     String? gl,
     String? hl,
+    String? ytMusicHomeRawHtml,
   }) async {
     if (hasInitialized) {
       return this;
     }
+    this.ytMusicHomeRawHtml = ytMusicHomeRawHtml;
     if (cookies != null) {
       for (final cookieString in cookies.split("; ")) {
         final cookie = Cookie.fromSetCookieValue(cookieString);
@@ -95,8 +103,20 @@ class YTMusic {
   /// Fetches the configuration data required for API requests.
   Future<void> fetchConfig() async {
     try {
-      final response = await dio.get('/');
-      final html = response.data;
+      late final String html;
+      if (ytMusicHomeRawHtml != null) {
+        html = ytMusicHomeRawHtml!;
+      } else {
+        final response = await dio.get(
+          '/',
+        );
+        html = response.data;
+      }
+
+      if (html.contains('not optimized for your browser')) {
+        print('Browser compatibility error in HTML response');
+        throw Exception('Browser compatibility error detected');
+      }
       config['VISITOR_DATA'] = _extractValue(html, r'"VISITOR_DATA":"(.*?)"');
       config['INNERTUBE_CONTEXT_CLIENT_NAME'] = _extractValue(
           html, r'"INNERTUBE_CONTEXT_CLIENT_NAME":\s*(-?\d+|\"(.*?)\")');
@@ -117,6 +137,7 @@ class YTMusic {
       config['HL'] = _extractValue(html, r'"HL":"(.*?)"');
     } catch (e) {
       print('Error fetching data: ${e.toString()}');
+      exit(1);
     }
   }
 
