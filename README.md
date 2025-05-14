@@ -28,7 +28,7 @@ Add the following line to your `pubspec.yaml` file under the `dependencies` sect
 
 ```yaml
 dependencies:
-  dart_ytmusic_api: ^1.2.0
+  dart_ytmusic_api: ^1.2.1
 ```
 
 Then, run `flutter pub get` (for Flutter projects) or `dart pub get` (for general Dart projects) to install the package.

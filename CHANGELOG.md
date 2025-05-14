@@ -1,3 +1,8 @@
+## 1.2.1
+
+**Fix**
+- Removed exit(1)
+
 ## 1.2.0
 
 **New Feature**
