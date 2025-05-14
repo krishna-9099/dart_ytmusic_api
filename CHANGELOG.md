@@ -1,3 +1,8 @@
+## 1.2.0
+
+**New Feature**
+- Added ytMusicHomeRawHtml property to add credentials externally
+
 ## 1.1.1
 
 **Fixes**
