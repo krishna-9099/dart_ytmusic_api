@@ -6,13 +6,10 @@ import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class Parser {
   static int? parseDuration(String? time) {
-    final regex = RegExp(r'\((\d{1,2}:\d{2})\)');
-    final match = regex.firstMatch(time ?? '00:00');
-    if (time == null || match == null) return null;
-
-    final extractedTime = match.group(1)!;
-
-    final parts = extractedTime.split(":").reversed.map(int.parse).toList();
+    if (time == null) return null;
+    final parts = time.split(":").reversed.map(int.parse).toList();
+    if (time.length < 2) return null;
+    
     final seconds = parts[0];
     final minutes = parts[1];
     late final int hours;
