@@ -125,6 +125,9 @@ class ArtistBasic {
   ArtistBasic.fromMap(Map<String, dynamic> map)
       : artistId = map['artistId'] as String?,
         name = map['name'] as String;
+
+  @override
+  String toString() => 'ArtistBasic(artistId: $artistId, name: $name)';
 }
 
 class AlbumBasic {
@@ -140,6 +143,9 @@ class AlbumBasic {
   AlbumBasic.fromMap(Map<String, dynamic> map)
       : albumId = map['albumId'] as String,
         name = map['name'] as String;
+
+  @override
+  String toString() => 'AlbumBasic(albumId: $albumId, name: $name)';
 }
 
 class SongDetailed implements SearchResult {
@@ -322,6 +328,11 @@ class SongFull implements SearchResult {
             .toList(),
         formats = map['formats'] as List<dynamic>,
         adaptiveFormats = map['adaptiveFormats'] as List<dynamic>;
+
+  @override
+  String toString() {
+    return 'SongFull(type: $type, videoId: $videoId, name: $name, artist: $artist, duration: $duration, thumbnails: $thumbnails, formats: $formats, adaptiveFormats: $adaptiveFormats)';
+  }
 }
 
 class VideoFull {
@@ -573,6 +584,7 @@ class UpNextsDetails {
   final String videoId;
   final String title;
   final ArtistBasic artists;
+  final AlbumBasic? album;
   final int duration;
   final List<ThumbnailFull> thumbnails;
 
@@ -581,6 +593,7 @@ class UpNextsDetails {
     required this.videoId,
     required this.title,
     required this.artists,
+    this.album,
     required this.duration,
     required this.thumbnails,
   });
@@ -591,6 +604,7 @@ class UpNextsDetails {
         videoId = map['videoId'] as String,
         title = map['title'] as String,
         artists = ArtistBasic.fromMap(map['artists']),
+        album = map['album'] != null ? AlbumBasic.fromMap(map['album']) : null,
         duration = map['duration'] as int,
         thumbnails = (map['thumbnails'] as List)
             .map((item) => ThumbnailFull.fromMap(item))
@@ -598,7 +612,7 @@ class UpNextsDetails {
 
   @override
   String toString() {
-    return 'UpNextsDetails(type: $type, videoId: $videoId, title: $title, artists: $artists, duration: $duration, thumbnails: $thumbnails)';
+    return 'UpNextsDetails(type: $type, videoId: $videoId, title: $title, artists: $artists, album: $album, duration: $duration, thumbnails: $thumbnails)';
   }
 }
 
