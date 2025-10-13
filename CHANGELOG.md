@@ -1,3 +1,8 @@
+## 1.3.3
+
+**Fix**
+- Fixed `parseDuration` to handle duration strings with extra text/metadata using regex extraction.
+
 ## 1.3.2
 
 **Fix**
