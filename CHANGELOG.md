@@ -1,3 +1,8 @@
+## 1.3.1
+
+**Fix**
+- Fixed `getUpNexts` return type to properly match original implementation with correct data structure (artists as ArtistBasic object, duration as int in seconds, thumbnails as array).
+
 ## 1.3.0
 
 **New Feature**
