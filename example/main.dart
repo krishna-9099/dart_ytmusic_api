@@ -67,6 +67,14 @@ Future<void> getSong(YTMusic ytmusic) async {
   print('${result.name} - ${result.videoId}');
 }
 
+/// Retrieves up next songs for a given video ID and prints the results.
+Future<void> getUpNexts(YTMusic ytmusic) async {
+  final results = await ytmusic.getUpNexts('LDY4Bf8Zwn8');
+  for (final result in results) {
+    print('${result.title} - ${result.artists} - ${result.videoId}');
+  }
+}
+
 /// Retrieves details of a video by its ID and prints the result.
 Future<void> getVideo(YTMusic ytmusic) async {
   final result = await ytmusic.getVideo('LDY4Bf8Zwn8');
