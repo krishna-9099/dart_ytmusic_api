@@ -1,3 +1,8 @@
+## 1.3.0
+
+**New Feature**
+- Added `getUpNexts(String videoId)`: Retrieve suggested up next songs for a given video.
+
 ## 1.2.1
 
 **Fix**
