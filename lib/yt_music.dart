@@ -373,24 +373,35 @@ class YTMusic {
 
     return tabsList.skip(1).map((item) {
       final renderer = item['playlistPanelVideoRenderer'];
-      final videoId = renderer['videoId'];
-      final title = renderer['title']?['runs']?[0]?['text'] ?? "Unknown";
-      final artists =
-          renderer['shortBylineText']?['runs']?[0]?['text'] ?? "Unknown";
-      final duration =
-          renderer['lengthText']?['runs']?[0]?['text'] ?? "Unknown";
-      final thumbnails = renderer['thumbnail']?['thumbnails'];
-      final thumbnail = thumbnails is List && thumbnails.isNotEmpty
-          ? thumbnails.last['url'] ?? "Unknown"
-          : "Unknown";
+      final videoId = renderer['videoId'] ?? '';
+      final title = renderer['title']?['runs']?[0]?['text'] ?? '';
+
+      // Parse artist information
+      final artistName =
+          renderer['shortBylineText']?['runs']?[0]?['text'] ?? '';
+      final artistId = renderer['shortBylineText']?['runs']?[0]
+          ?['navigationEndpoint']?['browseEndpoint']?['browseId'];
+
+      // Parse duration
+      final durationText = renderer['lengthText']?['runs']?[0]?['text'];
+      final duration = Parser.parseDuration(durationText) ?? 0;
+
+      // Parse thumbnails
+      final thumbnailsList = renderer['thumbnail']?['thumbnails'];
+      final thumbnails = thumbnailsList is List
+          ? thumbnailsList.map((item) => ThumbnailFull.fromMap(item)).toList()
+          : <ThumbnailFull>[];
 
       return UpNextsDetails(
         type: "SONG",
         videoId: videoId,
         title: title,
-        artists: artists,
+        artists: ArtistBasic(
+          name: artistName,
+          artistId: artistId,
+        ),
         duration: duration,
-        thumbnail: thumbnail,
+        thumbnails: thumbnails,
       );
     }).toList();
   }

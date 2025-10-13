@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 class ClientRequestOptions {
   final String? clientName;
   final String? clientVersion;
@@ -571,9 +572,9 @@ class UpNextsDetails {
   final String type;
   final String videoId;
   final String title;
-  final String artists;
-  final String duration;
-  final String thumbnail;
+  final ArtistBasic artists;
+  final int duration;
+  final List<ThumbnailFull> thumbnails;
 
   UpNextsDetails({
     required this.type,
@@ -581,7 +582,7 @@ class UpNextsDetails {
     required this.title,
     required this.artists,
     required this.duration,
-    required this.thumbnail,
+    required this.thumbnails,
   });
 
   // Construtor nomeado para criar uma UpNextsDetails a partir de um mapa
@@ -589,9 +590,16 @@ class UpNextsDetails {
       : type = map['type'] as String,
         videoId = map['videoId'] as String,
         title = map['title'] as String,
-        artists = map['artists'] as String,
-        duration = map['duration'] as String,
-        thumbnail = map['thumbnail'] as String;
+        artists = ArtistBasic.fromMap(map['artists']),
+        duration = map['duration'] as int,
+        thumbnails = (map['thumbnails'] as List)
+            .map((item) => ThumbnailFull.fromMap(item))
+            .toList();
+
+  @override
+  String toString() {
+    return 'UpNextsDetails(type: $type, videoId: $videoId, title: $title, artists: $artists, duration: $duration, thumbnails: $thumbnails)';
+  }
 }
 
 class HomeSection {
