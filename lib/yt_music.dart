@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dart_ytmusic_api/enums.dart';
 import 'package:dart_ytmusic_api/parsers/album_parser.dart';
@@ -376,11 +374,25 @@ class YTMusic {
       final videoId = renderer['videoId'] ?? '';
       final title = renderer['title']?['runs']?[0]?['text'] ?? '';
 
-      // Parse artist information
-      final artistName =
-          renderer['shortBylineText']?['runs']?[0]?['text'] ?? '';
-      final artistId = renderer['shortBylineText']?['runs']?[0]
-          ?['navigationEndpoint']?['browseEndpoint']?['browseId'];
+      // Parse artist information from longBylineText
+      final longBylineRuns = renderer['longBylineText']?['runs'];
+      final artistName = longBylineRuns?[0]?['text'] ?? '';
+      final artistId = longBylineRuns?[0]?['navigationEndpoint']
+          ?['browseEndpoint']?['browseId'];
+
+      // Parse album information (usually at index 2 in longBylineText.runs)
+      AlbumBasic? album;
+      if (longBylineRuns != null && longBylineRuns.length > 2) {
+        final albumName = longBylineRuns[2]?['text'];
+        final albumId = longBylineRuns[2]?['navigationEndpoint']
+            ?['browseEndpoint']?['browseId'];
+        if (albumName != null && albumId != null) {
+          album = AlbumBasic(
+            name: albumName,
+            albumId: albumId,
+          );
+        }
+      }
 
       // Parse duration
       final durationText = renderer['lengthText']?['runs']?[0]?['text'];
@@ -400,6 +412,7 @@ class YTMusic {
           name: artistName,
           artistId: artistId,
         ),
+        album: album,
         duration: duration,
         thumbnails: thumbnails,
       );
