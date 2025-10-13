@@ -1,3 +1,9 @@
+## 1.3.2
+
+**Fix**
+- Fixed `getUpNexts` to properly parse artist ID from `longBylineText` instead of `shortBylineText`.
+- Added album support to `getUpNexts` with optional `AlbumBasic` field.
+
 ## 1.3.1
 
 **Fix**
