@@ -567,6 +567,33 @@ SearchResult createSearchResultFromMap(Map<String, dynamic> map) {
   }
 }
 
+class UpNextsDetails {
+  final String type;
+  final String videoId;
+  final String title;
+  final String artists;
+  final String duration;
+  final String thumbnail;
+
+  UpNextsDetails({
+    required this.type,
+    required this.videoId,
+    required this.title,
+    required this.artists,
+    required this.duration,
+    required this.thumbnail,
+  });
+
+  // Construtor nomeado para criar uma UpNextsDetails a partir de um mapa
+  UpNextsDetails.fromMap(Map<String, dynamic> map)
+      : type = map['type'] as String,
+        videoId = map['videoId'] as String,
+        title = map['title'] as String,
+        artists = map['artists'] as String,
+        duration = map['duration'] as String,
+        thumbnail = map['thumbnail'] as String;
+}
+
 class HomeSection {
   final String title;
   final List<dynamic> contents;

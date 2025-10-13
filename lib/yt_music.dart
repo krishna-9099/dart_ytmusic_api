@@ -348,6 +348,53 @@ class YTMusic {
     return song;
   }
 
+  /// Retrieves a list of up next songs for a given video ID.
+  Future<List<UpNextsDetails>> getUpNexts(String videoId) async {
+    if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
+      throw Exception("Invalid videoId");
+    }
+
+    final data = await constructRequest("next", body: {
+      "videoId": videoId,
+      "playlistId": "RDAMVM$videoId",
+      "isAudioOnly": true,
+    });
+
+    final tabs = data?['contents']?['singleColumnMusicWatchNextResultsRenderer']
+                ?['tabbedRenderer']?['watchNextTabbedResultsRenderer']?['tabs']
+            ?[0]?['tabRenderer']?['content']?['musicQueueRenderer']?['content']
+        ?['playlistPanelRenderer']?['contents'];
+
+    if (tabs == null) {
+      throw Exception("Invalid response structure");
+    }
+
+    final List<dynamic> tabsList = tabs is List ? tabs : [];
+
+    return tabsList.skip(1).map((item) {
+      final renderer = item['playlistPanelVideoRenderer'];
+      final videoId = renderer['videoId'];
+      final title = renderer['title']?['runs']?[0]?['text'] ?? "Unknown";
+      final artists =
+          renderer['shortBylineText']?['runs']?[0]?['text'] ?? "Unknown";
+      final duration =
+          renderer['lengthText']?['runs']?[0]?['text'] ?? "Unknown";
+      final thumbnails = renderer['thumbnail']?['thumbnails'];
+      final thumbnail = thumbnails is List && thumbnails.isNotEmpty
+          ? thumbnails.last['url'] ?? "Unknown"
+          : "Unknown";
+
+      return UpNextsDetails(
+        type: "SONG",
+        videoId: videoId,
+        title: title,
+        artists: artists,
+        duration: duration,
+        thumbnail: thumbnail,
+      );
+    }).toList();
+  }
+
   /// Retrieves detailed information about a video given its video ID.
   Future<VideoFull> getVideo(String videoId) async {
     if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
