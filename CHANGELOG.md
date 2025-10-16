@@ -1,3 +1,8 @@
+## 1.3.5
+
+**Fix**
+- Removed package versions from pubspec
+
 ## 1.3.4
 
 **Chore**
