@@ -1,3 +1,8 @@
+## 1.3.4
+
+**Chore**
+- Removed unused `intl` dependency.
+
 ## 1.3.3
 
 **Fix**
