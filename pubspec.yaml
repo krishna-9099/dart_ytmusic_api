@@ -7,11 +7,11 @@ environment:
   sdk: ^3.4.3
 
 dependencies:
-  cookie_jar: ^4.0.8
-  dio: ^5.8.0+1
-  html: ^0.15.4
-  http: ^1.4.0
+  cookie_jar:
+  dio:
+  html:
+  http:
 
 dev_dependencies:
-  lints: ^3.0.0
-  test: ^1.24.0
+  lints:
+  test:
