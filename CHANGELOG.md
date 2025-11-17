@@ -1,3 +1,10 @@
+## 1.3.6
+**Fix**
+- Critical API crash on non-English systems: Resolved a FormatException that prevented the application from working on operating systems with non-English locales (e.g., Portuguese, Spanish). The issue was caused by an invalid timezone format in API request headers.
+
+**Refactor**
+- Dependency Migration: Replaced the dio package with the standard http package for all network requests.
+
 ## 1.3.5
 
 **Fix**
