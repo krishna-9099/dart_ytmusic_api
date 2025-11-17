@@ -191,6 +191,10 @@ class YTMusic {
     Map<String, String> query = const {},
     ClientRequestOptions? options,
   }) async {
+    print('constructRequest: endpoint: $endpoint');
+    print('constructRequest: body: $body');
+    print('constructRequest: query: $query');
+
     final headers = <String, String>{
       ...dio.options.headers,
       "x-origin": "https://music.youtube.com/",
@@ -264,6 +268,7 @@ class YTMusic {
         },
         options: Options(headers: headers),
       );
+      print('constructRequest: response: \$response');
       final jsonData = response.data;
 
       if (jsonData.containsKey("responseContext")) {
@@ -274,6 +279,9 @@ class YTMusic {
     } on DioException catch (e) {
       print(
           'Failed to make request to ${e.requestOptions.uri} - ${e.response?.statusCode} - [${e.response?.data}]');
+    } catch (e) {
+      print('constructRequest: error: \$e');
+      rethrow;
     }
   }
 
