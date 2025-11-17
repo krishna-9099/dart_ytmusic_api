@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dart_ytmusic_api/enums.dart';
@@ -49,70 +48,42 @@ class YTMusic {
     String? ytMusicHomeRawHtml,
   }) async {
     // Start initialization
-    print('YTMusic.initialize: starting initialization');
 
     if (hasInitialized) {
-      print(
-          'YTMusic.initialize: already initialized, returning existing instance');
       return this;
     }
 
     // Accept optional pre-fetched HTML
     this.ytMusicHomeRawHtml = ytMusicHomeRawHtml;
-    if (ytMusicHomeRawHtml != null) {
-      print(
-          'YTMusic.initialize: using provided ytMusicHomeRawHtml (pre-fetched HTML)');
-    }
+    if (ytMusicHomeRawHtml != null) {}
 
     // Process incoming cookies string if provided
     if (cookies != null) {
-      print('YTMusic.initialize: incoming cookies string provided');
       for (final cookieString in cookies.split('; ')) {
         try {
           final cookie = Cookie.fromSetCookieValue(cookieString);
-          print(
-              'YTMusic.initialize: saving cookie -> name: ${cookie.name}, value: ${cookie.value}');
           cookieJar.saveFromResponse(
             Uri.parse('https://www.youtube.com/'),
             [cookie],
           );
         } catch (e) {
-          print(
-              'YTMusic.initialize: failed to parse/save cookie "${cookieString}" -> $e');
+          //
         }
       }
-    } else {
-      print('YTMusic.initialize: no cookies string provided');
-    }
+    } else {}
 
     // Fetch configuration from YouTube Music homepage (or provided HTML)
-    print('YTMusic.initialize: fetching configuration (fetchConfig)');
     await fetchConfig();
-
-    // Log the resulting config map (keys and values)
-    print('YTMusic.initialize: configuration fetched. Contents of config map:');
-    if (config.isEmpty) {
-      print('YTMusic.initialize: config map is empty');
-    } else {
-      config.forEach((key, value) {
-        print('  config[${key}] = ${value}');
-      });
-    }
 
     // Override GL/HL if user supplied them explicitly
     if (gl != null) {
-      print(
-          'YTMusic.initialize: overriding GL -> provided: $gl (was: ${config['GL']})');
       config['GL'] = gl;
     }
     if (hl != null) {
-      print(
-          'YTMusic.initialize: overriding HL -> provided: $hl (was: ${config['HL']})');
       config['HL'] = hl;
     }
 
     hasInitialized = true;
-    print('YTMusic.initialize: initialization completed successfully');
 
     return this;
   }
@@ -173,10 +144,6 @@ class YTMusic {
     Map<String, String> query = const {},
     ClientRequestOptions? options,
   }) async {
-    print('constructRequest: endpoint: $endpoint');
-    print('constructRequest: body: $body');
-    print('constructRequest: query: $query');
-
     final baseUrl = "https://music.youtube.com/";
     final fullQuery = {
       ...query,
@@ -204,7 +171,6 @@ class YTMusic {
       "X-YouTube-Page-Label": config['PAGE_BUILD_LABEL'] ?? '',
       "X-YouTube-Utc-Offset":
           (-DateTime.now().timeZoneOffset.inMinutes).toString(),
-      "X-YouTube-Time-Zone": DateTime.now().timeZoneName,
       "Content-Type": "application/json",
     };
 
@@ -268,7 +234,6 @@ class YTMusic {
       );
 
       _saveCookiesFromHeaders(uri, response.headers);
-      print('constructRequest: response status: ${response.statusCode}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final jsonData = json.decode(response.body);
@@ -278,12 +243,10 @@ class YTMusic {
             'Failed to make request to $uri - ${response.statusCode} - [${response.body}]');
       }
     } on http.ClientException catch (e) {
-      print('Failed to make request to $uri - ClientException: $e');
+      print('HTTP Client Exception during request to $uri: $e');
       rethrow;
-    } catch (e, stackTrce) {
-      final errorFile = File('error.txt');
-      errorFile.writeAsStringSync(e.toString());
-      print('constructRequest: error: $e, stackTrace: $stackTrce');
+    } catch (e) {
+      print('Error during request to $uri: $e');
       rethrow;
     }
   }
@@ -295,7 +258,7 @@ class YTMusic {
       final cookie = Cookie.fromSetCookieValue(setCookieHeader);
       cookieJar.saveFromResponse(uri, [cookie]);
     } catch (e) {
-      print("Warning: Could not parse set-cookie header: $e");
+      //
     }
   }
 
