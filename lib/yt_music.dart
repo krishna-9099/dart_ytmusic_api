@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dart_ytmusic_api/enums.dart';
@@ -279,8 +280,10 @@ class YTMusic {
     } on http.ClientException catch (e) {
       print('Failed to make request to $uri - ClientException: $e');
       rethrow;
-    } catch (e) {
-      print('constructRequest: error: $e');
+    } catch (e, stackTrce) {
+      final errorFile = File('error.txt');
+      errorFile.writeAsStringSync(e.toString());
+      print('constructRequest: error: $e, stackTrace: $stackTrce');
       rethrow;
     }
   }
