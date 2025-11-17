@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dart_ytmusic_api/enums.dart';
 import 'package:dart_ytmusic_api/parsers/album_parser.dart';
@@ -9,7 +11,7 @@ import 'package:dart_ytmusic_api/parsers/song_parser.dart';
 import 'package:dart_ytmusic_api/parsers/video_parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
-import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 
 class YTMusic {
   static final YTMusic _instance = YTMusic._internal();
@@ -21,49 +23,20 @@ class YTMusic {
   YTMusic._internal() {
     cookieJar = CookieJar();
     config = {};
-    dio = Dio(
-      BaseOptions(
-        baseUrl: "https://music.youtube.com/",
-        headers: {
-          "User-Agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36",
-          "Accept":
-              "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.9",
-        },
-        extra: {
-          'withCredentials': true,
-        },
-      ),
-    );
-
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final cookies =
-            await cookieJar.loadForRequest(Uri.parse(options.baseUrl));
-        final cookieString = cookies
-            .map((cookie) => '${cookie.name}=${cookie.value}')
-            .join('; ');
-        if (cookieString.isNotEmpty) {
-          options.headers['cookie'] = cookieString;
-        }
-        return handler.next(options);
-      },
-      onResponse: (response, handler) {
-        final cookieStrings = response.headers['set-cookie'] ?? [];
-        for (final cookieString in cookieStrings) {
-          final cookie = Cookie.fromSetCookieValue(cookieString);
-          cookieJar.saveFromResponse(
-              Uri.parse(response.requestOptions.baseUrl), [cookie]);
-        }
-        return handler.next(response);
-      },
-    ));
+    _client = http.Client();
+    _baseHeaders = {
+      "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36",
+      "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+    };
   }
 
   late CookieJar cookieJar;
   late Map<String, String> config;
-  late Dio dio;
+  late http.Client _client;
+  late Map<String, String> _baseHeaders;
   bool hasInitialized = false;
   String? ytMusicHomeRawHtml;
 
@@ -146,13 +119,21 @@ class YTMusic {
   /// Fetches the configuration data required for API requests.
   Future<void> fetchConfig() async {
     late final String html;
+    final uri = Uri.parse("https://music.youtube.com/");
     if (ytMusicHomeRawHtml != null) {
       html = ytMusicHomeRawHtml!;
     } else {
-      final response = await dio.get(
-        '/',
-      );
-      html = response.data;
+      final cookies = await cookieJar.loadForRequest(uri);
+      final cookieString =
+          cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
+      final headers = {..._baseHeaders};
+      if (cookieString.isNotEmpty) {
+        headers['cookie'] = cookieString;
+      }
+      final response = await _client.get(uri, headers: headers);
+
+      _saveCookiesFromHeaders(uri, response.headers);
+      html = response.body;
     }
 
     if (html.contains('not optimized for your browser')) {
@@ -195,9 +176,25 @@ class YTMusic {
     print('constructRequest: body: $body');
     print('constructRequest: query: $query');
 
+    final baseUrl = "https://music.youtube.com/";
+    final fullQuery = {
+      ...query,
+      "alt": "json",
+      "key": config['INNERTUBE_API_KEY'],
+    };
+
+    final uri = Uri.parse(baseUrl).replace(
+      path: "youtubei/${config['INNERTUBE_API_VERSION']}/$endpoint",
+      queryParameters: fullQuery,
+    );
+
+    final cookies = await cookieJar.loadForRequest(uri);
+    final cookieString =
+        cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
+
     final headers = <String, String>{
-      ...dio.options.headers,
-      "x-origin": "https://music.youtube.com/",
+      ..._baseHeaders,
+      "x-origin": baseUrl,
       "X-Goog-Visitor-Id": config['VISITOR_DATA'] ?? "",
       "X-YouTube-Client-Name": config['INNERTUBE_CONTEXT_CLIENT_NAME'] ?? '',
       "X-YouTube-Client-Version": config['INNERTUBE_CLIENT_VERSION'] ?? '',
@@ -207,81 +204,95 @@ class YTMusic {
       "X-YouTube-Utc-Offset":
           (-DateTime.now().timeZoneOffset.inMinutes).toString(),
       "X-YouTube-Time-Zone": DateTime.now().timeZoneName,
+      "Content-Type": "application/json",
     };
 
-    final searchParams = Uri.parse("?").replace(queryParameters: {
-      ...query,
-      "alt": "json",
-      "key": config['INNERTUBE_API_KEY'],
-    });
+    if (cookieString.isNotEmpty) {
+      headers['cookie'] = cookieString;
+    }
+
+    final requestBody = {
+      "context": {
+        "capabilities": {},
+        "client": {
+          "clientName": options?.clientName ?? config['INNERTUBE_CLIENT_NAME'],
+          "clientVersion":
+              options?.clientVersion ?? config['INNERTUBE_CLIENT_VERSION'],
+          "experimentIds": [],
+          "experimentsToken": "",
+          "gl": config['GL'],
+          "hl": config['HL'],
+          "locationInfo": {
+            "locationPermissionAuthorizationStatus":
+                "LOCATION_PERMISSION_AUTHORIZATION_STATUS_UNSUPPORTED",
+          },
+          "musicAppInfo": {
+            "musicActivityMasterSwitch":
+                "MUSIC_ACTIVITY_MASTER_SWITCH_INDETERMINATE",
+            "musicLocationMasterSwitch":
+                "MUSIC_LOCATION_MASTER_SWITCH_INDETERMINATE",
+            "pwaInstallabilityStatus": "PWA_INSTALLABILITY_STATUS_UNKNOWN",
+          },
+          "utcOffsetMinutes": -DateTime.now().timeZoneOffset.inMinutes,
+        },
+        "request": {
+          "internalExperimentFlags": [
+            {
+              "key": "force_music_enable_outertube_tastebuilder_browse",
+              "value": "true",
+            },
+            {
+              "key": "force_music_enable_outertube_playlist_detail_browse",
+              "value": "true",
+            },
+            {
+              "key": "force_music_enable_outertube_search_suggestions",
+              "value": "true",
+            },
+          ],
+          "sessionIndex": {},
+        },
+        "user": {
+          "enableSafetyMode": false,
+        },
+      },
+      ...body,
+    };
 
     try {
-      final response = await dio.post(
-        "youtubei/${config['INNERTUBE_API_VERSION']}/$endpoint${searchParams.toString()}",
-        data: {
-          "context": {
-            "capabilities": {},
-            "client": {
-              "clientName":
-                  options?.clientName ?? config['INNERTUBE_CLIENT_NAME'],
-              "clientVersion":
-                  options?.clientVersion ?? config['INNERTUBE_CLIENT_VERSION'],
-              "experimentIds": [],
-              "experimentsToken": "",
-              "gl": config['GL'],
-              "hl": config['HL'],
-              "locationInfo": {
-                "locationPermissionAuthorizationStatus":
-                    "LOCATION_PERMISSION_AUTHORIZATION_STATUS_UNSUPPORTED",
-              },
-              "musicAppInfo": {
-                "musicActivityMasterSwitch":
-                    "MUSIC_ACTIVITY_MASTER_SWITCH_INDETERMINATE",
-                "musicLocationMasterSwitch":
-                    "MUSIC_LOCATION_MASTER_SWITCH_INDETERMINATE",
-                "pwaInstallabilityStatus": "PWA_INSTALLABILITY_STATUS_UNKNOWN",
-              },
-              "utcOffsetMinutes": -DateTime.now().timeZoneOffset.inMinutes,
-            },
-            "request": {
-              "internalExperimentFlags": [
-                {
-                  "key": "force_music_enable_outertube_tastebuilder_browse",
-                  "value": "true",
-                },
-                {
-                  "key": "force_music_enable_outertube_playlist_detail_browse",
-                  "value": "true",
-                },
-                {
-                  "key": "force_music_enable_outertube_search_suggestions",
-                  "value": "true",
-                },
-              ],
-              "sessionIndex": {},
-            },
-            "user": {
-              "enableSafetyMode": false,
-            },
-          },
-          ...body,
-        },
-        options: Options(headers: headers),
+      final response = await _client.post(
+        uri,
+        headers: headers,
+        body: json.encode(requestBody),
       );
-      print('constructRequest: response: \$response');
-      final jsonData = response.data;
 
-      if (jsonData.containsKey("responseContext")) {
+      _saveCookiesFromHeaders(uri, response.headers);
+      print('constructRequest: response status: ${response.statusCode}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final jsonData = json.decode(response.body);
         return jsonData;
       } else {
-        return jsonData;
+        throw Exception(
+            'Failed to make request to $uri - ${response.statusCode} - [${response.body}]');
       }
-    } on DioException catch (e) {
-      print(
-          'Failed to make request to ${e.requestOptions.uri} - ${e.response?.statusCode} - [${e.response?.data}]');
-    } catch (e) {
-      print('constructRequest: error: \$e');
+    } on http.ClientException catch (e) {
+      print('Failed to make request to $uri - ClientException: $e');
       rethrow;
+    } catch (e) {
+      print('constructRequest: error: $e');
+      rethrow;
+    }
+  }
+
+  void _saveCookiesFromHeaders(Uri uri, Map<String, String> headers) {
+    final setCookieHeader = headers['set-cookie'];
+    if (setCookieHeader == null) return;
+    try {
+      final cookie = Cookie.fromSetCookieValue(setCookieHeader);
+      cookieJar.saveFromResponse(uri, [cookie]);
+    } catch (e) {
+      print("Warning: Could not parse set-cookie header: $e");
     }
   }
 
