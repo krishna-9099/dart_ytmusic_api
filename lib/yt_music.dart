@@ -74,26 +74,71 @@ class YTMusic {
     String? hl,
     String? ytMusicHomeRawHtml,
   }) async {
+    // Start initialization
+    print('YTMusic.initialize: starting initialization');
+
     if (hasInitialized) {
+      print(
+          'YTMusic.initialize: already initialized, returning existing instance');
       return this;
     }
+
+    // Accept optional pre-fetched HTML
     this.ytMusicHomeRawHtml = ytMusicHomeRawHtml;
-    if (cookies != null) {
-      for (final cookieString in cookies.split("; ")) {
-        final cookie = Cookie.fromSetCookieValue(cookieString);
-        cookieJar.saveFromResponse(
-          Uri.parse("https://www.youtube.com/"),
-          [cookie],
-        );
-      }
+    if (ytMusicHomeRawHtml != null) {
+      print(
+          'YTMusic.initialize: using provided ytMusicHomeRawHtml (pre-fetched HTML)');
     }
 
+    // Process incoming cookies string if provided
+    if (cookies != null) {
+      print('YTMusic.initialize: incoming cookies string provided');
+      for (final cookieString in cookies.split('; ')) {
+        try {
+          final cookie = Cookie.fromSetCookieValue(cookieString);
+          print(
+              'YTMusic.initialize: saving cookie -> name: ${cookie.name}, value: ${cookie.value}');
+          cookieJar.saveFromResponse(
+            Uri.parse('https://www.youtube.com/'),
+            [cookie],
+          );
+        } catch (e) {
+          print(
+              'YTMusic.initialize: failed to parse/save cookie "${cookieString}" -> $e');
+        }
+      }
+    } else {
+      print('YTMusic.initialize: no cookies string provided');
+    }
+
+    // Fetch configuration from YouTube Music homepage (or provided HTML)
+    print('YTMusic.initialize: fetching configuration (fetchConfig)');
     await fetchConfig();
 
-    if (gl != null) config['GL'] = gl;
-    if (hl != null) config['HL'] = hl;
+    // Log the resulting config map (keys and values)
+    print('YTMusic.initialize: configuration fetched. Contents of config map:');
+    if (config.isEmpty) {
+      print('YTMusic.initialize: config map is empty');
+    } else {
+      config.forEach((key, value) {
+        print('  config[${key}] = ${value}');
+      });
+    }
+
+    // Override GL/HL if user supplied them explicitly
+    if (gl != null) {
+      print(
+          'YTMusic.initialize: overriding GL -> provided: $gl (was: ${config['GL']})');
+      config['GL'] = gl;
+    }
+    if (hl != null) {
+      print(
+          'YTMusic.initialize: overriding HL -> provided: $hl (was: ${config['HL']})');
+      config['HL'] = hl;
+    }
 
     hasInitialized = true;
+    print('YTMusic.initialize: initialization completed successfully');
 
     return this;
   }
