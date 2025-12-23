@@ -72,6 +72,13 @@ class Parser {
       title: traverseString(data, ["header", "title", "text"]) ?? '',
       contents: traverseList(data, ["contents"])
           .map((item) {
+            String? itemType;
+            if (item.containsKey('musicResponsiveListItemRenderer')) {
+              itemType = 'song';
+            } else if (item.containsKey('musicTwoRowItemRenderer')) {
+              itemType = 'playlist_or_album';
+            }
+
             switch (pageType) {
               case 'MUSIC_PAGE_TYPE_ALBUM':
                 return AlbumParser.parseHomeSection(item);
@@ -84,6 +91,13 @@ class Parser {
                   return SongParser.parseHomeSection(item);
                 }
               default:
+                // Handle null pageType based on item type
+                if (itemType == 'song') {
+                  return SongParser.parseHomeSection(item);
+                } else if (itemType == 'playlist_or_album') {
+                  // Try playlist first, or could check section title
+                  return PlaylistParser.parseHomeSection(item);
+                }
                 return null;
             }
           })
