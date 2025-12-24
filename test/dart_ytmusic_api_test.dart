@@ -47,4 +47,108 @@ void main() {
           'Pagination may not be supported or there are not enough results to paginate.');
     }
   });
+
+  test('searchVideos should retrieve videos and check for pagination',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final results = await ytmusic.searchVideos('popular music videos');
+
+    expect(results, isNotEmpty);
+    print('Found ${results.length} videos');
+
+    // Print first few results for inspection
+    for (int i = 0; i < results.length && i < 5; i++) {
+      final video = results[i];
+      print('Video $i: ${video.name} by ${video.artist.name}');
+    }
+
+    // Check if pagination is working - if we get more than 20 results, pagination is supported
+    if (results.length > 20) {
+      print(
+          'Pagination is supported! Retrieved ${results.length} videos total.');
+    } else {
+      print(
+          'Pagination may not be supported or there are not enough results to paginate.');
+    }
+  });
+
+  test('searchPlaylists should retrieve playlists and check for pagination',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final results = await ytmusic.searchPlaylists('popular playlists');
+
+    expect(results, isNotEmpty);
+    print('Found ${results.length} playlists');
+
+    // Print first few results for inspection
+    for (int i = 0; i < results.length && i < 5; i++) {
+      final playlist = results[i];
+      print('Playlist $i: ${playlist.name} by ${playlist.artist.name}');
+    }
+
+    // Check if pagination is working - if we get more than 20 results, pagination is supported
+    if (results.length > 20) {
+      print(
+          'Pagination is supported! Retrieved ${results.length} playlists total.');
+    } else {
+      print(
+          'Pagination may not be supported or there are not enough results to paginate.');
+    }
+  });
+
+  test('searchArtists should retrieve artists and check for pagination',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final results = await ytmusic.searchArtists('popular artists');
+
+    expect(results, isNotEmpty);
+    print('Found ${results.length} artists');
+
+    // Print first few results for inspection
+    for (int i = 0; i < results.length && i < 5; i++) {
+      final artist = results[i];
+      print('Artist $i: ${artist.name}');
+    }
+
+    // Check if pagination is working - if we get more than 20 results, pagination is supported
+    if (results.length > 20) {
+      print(
+          'Pagination is supported! Retrieved ${results.length} artists total.');
+    } else {
+      print(
+          'Pagination may not be supported or there are not enough results to paginate.');
+    }
+  });
+
+  test('searchAlbums should retrieve albums and check for pagination',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final results = await ytmusic.searchAlbums('popular albums');
+
+    expect(results, isNotEmpty);
+    print('Found ${results.length} albums');
+
+    // Print first few results for inspection
+    for (int i = 0; i < results.length && i < 5; i++) {
+      final album = results[i];
+      print('Album $i: ${album.name} by ${album.artist.name}');
+    }
+
+    // Check if pagination is working - if we get more than 20 results, pagination is supported
+    if (results.length > 20) {
+      print(
+          'Pagination is supported! Retrieved ${results.length} albums total.');
+    } else {
+      print(
+          'Pagination may not be supported or there are not enough results to paginate.');
+    }
+  });
 }

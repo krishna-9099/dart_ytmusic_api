@@ -297,10 +297,12 @@ class YTMusic {
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
     dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List) {
+    if (continuation is List && continuation.isNotEmpty) {
       continuation = continuation[0];
+    } else if (continuation is List && continuation.isEmpty) {
+      continuation = null;
     }
-    while (continuation is! List) {
+    while (continuation != null) {
       final songsData = await constructRequest(
         "search",
         query: {"continuation": continuation},
@@ -308,11 +310,20 @@ class YTMusic {
       results
           .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
       continuation = traverse(songsData, ["continuation"]);
+      if (continuation is List) {
+        if (continuation.isNotEmpty) {
+          continuation = continuation[0];
+        } else {
+          continuation = null;
+        }
+      }
     }
 
-    final mappedResults = results.map(SongParser.parseSearchResult).toList();
-
-    return mappedResults;
+    return results
+        .map(SongParser.parseSearchResult)
+        .where((e) => e != null)
+        .cast<SongDetailed>()
+        .toList();
   }
 
   /// Performs a search specifically for videos with the given query and returns a list of video details.
@@ -328,20 +339,33 @@ class YTMusic {
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
     dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List) {
+    if (continuation is List && continuation.isNotEmpty) {
       continuation = continuation[0];
+    } else if (continuation is List && continuation.isEmpty) {
+      continuation = null;
     }
-    while (continuation is! List) {
+    while (continuation != null) {
       final videosData = await constructRequest(
         "search",
         query: {"continuation": continuation},
       );
-      results
-          .addAll(traverseList(videosData, ["musicResponsiveListItemRenderer"]));
+      results.addAll(
+          traverseList(videosData, ["musicResponsiveListItemRenderer"]));
       continuation = traverse(videosData, ["continuation"]);
+      if (continuation is List) {
+        if (continuation.isNotEmpty) {
+          continuation = continuation[0];
+        } else {
+          continuation = null;
+        }
+      }
     }
 
-    return results.map(VideoParser.parseSearchResult).toList();
+    return results
+        .map(VideoParser.parseSearchResult)
+        .where((e) => e != null)
+        .cast<VideoDetailed>()
+        .toList();
   }
 
   /// Performs a search specifically for artists with the given query and returns a list of artist details.
@@ -354,8 +378,35 @@ class YTMusic {
       },
     );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+    final results =
+        traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+    dynamic continuation = traverse(searchData, ["continuation"]);
+    if (continuation is List && continuation.isNotEmpty) {
+      continuation = continuation[0];
+    } else if (continuation is List && continuation.isEmpty) {
+      continuation = null;
+    }
+    while (continuation != null) {
+      final artistsData = await constructRequest(
+        "search",
+        query: {"continuation": continuation},
+      );
+      results.addAll(
+          traverseList(artistsData, ["musicResponsiveListItemRenderer"]));
+      continuation = traverse(artistsData, ["continuation"]);
+      if (continuation is List) {
+        if (continuation.isNotEmpty) {
+          continuation = continuation[0];
+        } else {
+          continuation = null;
+        }
+      }
+    }
+
+    return results
         .map(ArtistParser.parseSearchResult)
+        .where((e) => e != null)
+        .cast<ArtistDetailed>()
         .toList();
   }
 
@@ -369,8 +420,35 @@ class YTMusic {
       },
     );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+    final results =
+        traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+    dynamic continuation = traverse(searchData, ["continuation"]);
+    if (continuation is List && continuation.isNotEmpty) {
+      continuation = continuation[0];
+    } else if (continuation is List && continuation.isEmpty) {
+      continuation = null;
+    }
+    while (continuation != null) {
+      final albumsData = await constructRequest(
+        "search",
+        query: {"continuation": continuation},
+      );
+      results.addAll(
+          traverseList(albumsData, ["musicResponsiveListItemRenderer"]));
+      continuation = traverse(albumsData, ["continuation"]);
+      if (continuation is List) {
+        if (continuation.isNotEmpty) {
+          continuation = continuation[0];
+        } else {
+          continuation = null;
+        }
+      }
+    }
+
+    return results
         .map(AlbumParser.parseSearchResult)
+        .where((e) => e != null)
+        .cast<AlbumDetailed>()
         .toList();
   }
 
@@ -384,8 +462,35 @@ class YTMusic {
       },
     );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+    final results =
+        traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+    dynamic continuation = traverse(searchData, ["continuation"]);
+    if (continuation is List && continuation.isNotEmpty) {
+      continuation = continuation[0];
+    } else if (continuation is List && continuation.isEmpty) {
+      continuation = null;
+    }
+    while (continuation != null) {
+      final playlistsData = await constructRequest(
+        "search",
+        query: {"continuation": continuation},
+      );
+      results.addAll(
+          traverseList(playlistsData, ["musicResponsiveListItemRenderer"]));
+      continuation = traverse(playlistsData, ["continuation"]);
+      if (continuation is List) {
+        if (continuation.isNotEmpty) {
+          continuation = continuation[0];
+        } else {
+          continuation = null;
+        }
+      }
+    }
+
+    return results
         .map(PlaylistParser.parseSearchResult)
+        .where((e) => e != null)
+        .cast<PlaylistDetailed>()
         .toList();
   }
 
