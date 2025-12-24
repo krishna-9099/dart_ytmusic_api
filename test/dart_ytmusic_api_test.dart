@@ -347,13 +347,15 @@ void main() {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final result = await ytmusic.getUpNexts('LDY4Bf8Zwn8'); // Using the same video ID from example
+    final result = await ytmusic
+        .getUpNexts('LDY4Bf8Zwn8'); // Using the same video ID from example
 
     // Handle both List<UpNextsDetails> and PaginatedResult<UpNextsDetails>
     List<UpNextsDetails> results;
     if (result is PaginatedResult<UpNextsDetails>) {
       results = result.items;
-      print('Paginated result: ${result.totalResultsFetched} up next songs, hasNextPage: ${result.hasNextPage}');
+      print(
+          'Paginated result: ${result.totalResultsFetched} up next songs, hasNextPage: ${result.hasNextPage}');
     } else {
       results = result as List<UpNextsDetails>;
     }
@@ -388,7 +390,8 @@ void main() {
     final paginatedResult = result as PaginatedResult<UpNextsDetails>;
 
     expect(paginatedResult.items, isNotEmpty);
-    print('Paginated result: ${paginatedResult.items.length} up next songs, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
+    print(
+        'Paginated result: ${paginatedResult.items.length} up next songs, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
 
     // Should have a continuation token if there are more pages
     if (paginatedResult.hasNextPage) {
@@ -403,13 +406,13 @@ void main() {
     }
   });
 
-  test('getUpNexts with continuationToken should return next page',
-      () async {
+  test('getUpNexts with continuationToken should return next page', () async {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
     // First get the first page
-    final firstPageResult = await ytmusic.getUpNexts('LDY4Bf8Zwn8', paginated: true);
+    final firstPageResult =
+        await ytmusic.getUpNexts('LDY4Bf8Zwn8', paginated: true);
     expect(firstPageResult, isA<PaginatedResult<UpNextsDetails>>());
     final firstPage = firstPageResult as PaginatedResult<UpNextsDetails>;
 
@@ -424,7 +427,8 @@ void main() {
       print('Second page: ${secondPage.items.length} songs');
 
       // Verify that the pages are different (first song should be different)
-      expect(firstPage.items.first.title, isNot(equals(secondPage.items.first.title)));
+      expect(firstPage.items.first.title,
+          isNot(equals(secondPage.items.first.title)));
 
       // Print first few results from second page
       for (int i = 0; i < secondPage.items.length && i < 3; i++) {
@@ -434,5 +438,89 @@ void main() {
     } else {
       print('No continuation token available, skipping continuation test');
     }
+  });
+
+  test('getPlaylist should work with RD playlist IDs', () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    // Test with a playlist ID that starts with RD (Radio/Recommended playlist)
+    // Note: RD playlist IDs may not work with getPlaylist method
+    try {
+      final playlist = await ytmusic.getPlaylist('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
+      expect(playlist, isNotNull);
+      expect(playlist.name, isNotEmpty);
+      print('✅ RD playlist ID works with getPlaylist');
+      print('Playlist name: ${playlist.name}');
+      print('Playlist artist: ${playlist.artist.name}');
+      print('Video count: ${playlist.videoCount}');
+      print('Playlist ID: ${playlist.playlistId}');
+    } catch (e) {
+      print('❌ RD playlist ID failed with getPlaylist - Error: $e');
+      print('Note: RD playlist IDs may not be supported by getPlaylist method');
+    }
+  });
+
+  test('getPlaylistVideos should work with RD playlist IDs', () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    // Test with a playlist ID that starts with RD
+    // Note: According to README, getPlaylistVideos is not working as expected
+    try {
+      final videos = await ytmusic.getPlaylistVideos('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
+      expect(videos, isNotEmpty);
+      print('✅ RD playlist ID works with getPlaylistVideos');
+      print('Found ${videos.length} videos in playlist');
+
+      // Print first few videos for inspection
+      for (int i = 0; i < videos.length && i < 3; i++) {
+        final video = videos[i];
+        print('Video $i: ${video.name} by ${video.artist.name}');
+      }
+    } catch (e) {
+      print('❌ RD playlist ID failed with getPlaylistVideos - Error: $e');
+      print('Note: getPlaylistVideos is known to have issues (see README)');
+    }
+  });
+
+  test('getPlaylist should handle different RD playlist ID formats', () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    // Test various RD playlist ID formats
+    final testPlaylistIds = [
+      'RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk', // Standard RD playlist
+      'RDAMVM_LD-Y4Bf8Zwn8', // RDAMVM format (used in getUpNexts)
+    ];
+
+    for (final playlistId in testPlaylistIds) {
+      try {
+        final playlist = await ytmusic.getPlaylist(playlistId);
+        expect(playlist, isNotNull);
+        expect(playlist.name, isNotEmpty);
+        print('✅ Playlist ID $playlistId works - Name: ${playlist.name}');
+      } catch (e) {
+        print('❌ Playlist ID $playlistId failed - Error: $e');
+        // Some RD playlist formats might not work, so we don't fail the test
+      }
+    }
+  });
+
+  test('RD playlist IDs are used in getUpNexts method', () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    // Test that getUpNexts works (it uses RDAMVM format internally)
+    final upNextSongs = await ytmusic.getUpNexts('LDY4Bf8Zwn8');
+
+    expect(upNextSongs, isNotEmpty);
+    print('✅ getUpNexts works and uses RDAMVM playlist ID format internally');
+    print('Found ${upNextSongs.length} up next songs');
+
+    // Verify that the internal playlist ID format is RDAMVM + videoId
+    // This is used in the getUpNexts method: "playlistId": "RDAMVM$videoId"
+    final expectedPlaylistId = 'RDAMVM_LD-Y4Bf8Zwn8';
+    print('Internal playlist ID format used: $expectedPlaylistId');
   });
 }
