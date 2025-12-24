@@ -100,7 +100,8 @@ class PaginatedResult<T> {
   final bool hasNextPage;
   final int totalResultsFetched;
 
-  PaginatedResult(this.items, this.continuationToken, this.hasNextPage, this.totalResultsFetched);
+  PaginatedResult(this.items, this.continuationToken, this.hasNextPage,
+      this.totalResultsFetched);
 
   @override
   String toString() =>

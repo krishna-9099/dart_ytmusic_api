@@ -285,11 +285,12 @@ class YTMusic {
   }
 
   /// Performs a search specifically for songs with the given query and returns a list of song details.
-  /// 
+  ///
   /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
   /// When [continuationToken] is provided, starts from that page.
   /// When [paginated] is false (default), returns all results (auto-pagination).
-  Future<dynamic> searchSongs(String query, {
+  Future<dynamic> searchSongs(
+    String query, {
     bool paginated = false,
     String? continuationToken,
   }) async {
@@ -303,13 +304,13 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    
+
     if (paginated) {
       // Return only first page with pagination info
       dynamic cont = traverse(searchData, ["continuation"]);
       String? nextToken;
       bool hasNext = false;
-      
+
       if (cont is List && cont.isNotEmpty) {
         nextToken = cont[0] as String?;
         hasNext = true;
@@ -317,19 +318,15 @@ class YTMusic {
         nextToken = cont;
         hasNext = true;
       }
-      
+
       final parsedResults = results
           .map(SongParser.parseSearchResult)
           .where((e) => e != null)
           .cast<SongDetailed>()
           .toList();
-          
+
       return PaginatedResult<SongDetailed>(
-        parsedResults, 
-        nextToken, 
-        hasNext, 
-        parsedResults.length
-      );
+          parsedResults, nextToken, hasNext, parsedResults.length);
     } else {
       // Auto-pagination (existing behavior)
       dynamic continuation = traverse(searchData, ["continuation"]);
@@ -343,8 +340,8 @@ class YTMusic {
           "search",
           query: {"continuation": continuation},
         );
-        results
-            .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
+        results.addAll(
+            traverseList(songsData, ["musicResponsiveListItemRenderer"]));
         continuation = traverse(songsData, ["continuation"]);
         if (continuation is List) {
           if (continuation.isNotEmpty) {
@@ -364,11 +361,12 @@ class YTMusic {
   }
 
   /// Performs a search specifically for videos with the given query and returns a list of video details.
-  /// 
+  ///
   /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
   /// When [continuationToken] is provided, starts from that page.
   /// When [paginated] is false (default), returns all results (auto-pagination).
-  Future<dynamic> searchVideos(String query, {
+  Future<dynamic> searchVideos(
+    String query, {
     bool paginated = false,
     String? continuationToken,
   }) async {
@@ -382,13 +380,13 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    
+
     if (paginated) {
       // Return only first page with pagination info
       dynamic cont = traverse(searchData, ["continuation"]);
       String? nextToken;
       bool hasNext = false;
-      
+
       if (cont is List && cont.isNotEmpty) {
         nextToken = cont[0] as String?;
         hasNext = true;
@@ -396,19 +394,15 @@ class YTMusic {
         nextToken = cont;
         hasNext = true;
       }
-      
+
       final parsedResults = results
           .map(VideoParser.parseSearchResult)
           .where((e) => e != null)
           .cast<VideoDetailed>()
           .toList();
-          
+
       return PaginatedResult<VideoDetailed>(
-        parsedResults, 
-        nextToken, 
-        hasNext, 
-        parsedResults.length
-      );
+          parsedResults, nextToken, hasNext, parsedResults.length);
     } else {
       // Auto-pagination (existing behavior)
       dynamic continuation = traverse(searchData, ["continuation"]);
@@ -443,11 +437,12 @@ class YTMusic {
   }
 
   /// Performs a search specifically for artists with the given query and returns a list of artist details.
-  /// 
+  ///
   /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
   /// When [continuationToken] is provided, starts from that page.
   /// When [paginated] is false (default), returns all results (auto-pagination).
-  Future<dynamic> searchArtists(String query, {
+  Future<dynamic> searchArtists(
+    String query, {
     bool paginated = false,
     String? continuationToken,
   }) async {
@@ -461,13 +456,13 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    
+
     if (paginated) {
       // Return only first page with pagination info
       dynamic cont = traverse(searchData, ["continuation"]);
       String? nextToken;
       bool hasNext = false;
-      
+
       if (cont is List && cont.isNotEmpty) {
         nextToken = cont[0] as String?;
         hasNext = true;
@@ -475,19 +470,15 @@ class YTMusic {
         nextToken = cont;
         hasNext = true;
       }
-      
+
       final parsedResults = results
           .map(ArtistParser.parseSearchResult)
           .where((e) => e != null)
           .cast<ArtistDetailed>()
           .toList();
-          
+
       return PaginatedResult<ArtistDetailed>(
-        parsedResults, 
-        nextToken, 
-        hasNext, 
-        parsedResults.length
-      );
+          parsedResults, nextToken, hasNext, parsedResults.length);
     } else {
       // Auto-pagination (existing behavior)
       dynamic continuation = traverse(searchData, ["continuation"]);
@@ -522,11 +513,12 @@ class YTMusic {
   }
 
   /// Performs a search specifically for albums with the given query and returns a list of album details.
-  /// 
+  ///
   /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
   /// When [continuationToken] is provided, starts from that page.
   /// When [paginated] is false (default), returns all results (auto-pagination).
-  Future<dynamic> searchAlbums(String query, {
+  Future<dynamic> searchAlbums(
+    String query, {
     bool paginated = false,
     String? continuationToken,
   }) async {
@@ -540,13 +532,13 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    
+
     if (paginated) {
       // Return only first page with pagination info
       dynamic cont = traverse(searchData, ["continuation"]);
       String? nextToken;
       bool hasNext = false;
-      
+
       if (cont is List && cont.isNotEmpty) {
         nextToken = cont[0] as String?;
         hasNext = true;
@@ -554,19 +546,15 @@ class YTMusic {
         nextToken = cont;
         hasNext = true;
       }
-      
+
       final parsedResults = results
           .map(AlbumParser.parseSearchResult)
           .where((e) => e != null)
           .cast<AlbumDetailed>()
           .toList();
-          
+
       return PaginatedResult<AlbumDetailed>(
-        parsedResults, 
-        nextToken, 
-        hasNext, 
-        parsedResults.length
-      );
+          parsedResults, nextToken, hasNext, parsedResults.length);
     } else {
       // Auto-pagination (existing behavior)
       dynamic continuation = traverse(searchData, ["continuation"]);
@@ -601,11 +589,12 @@ class YTMusic {
   }
 
   /// Performs a search specifically for playlists with the given query and returns a list of playlist details.
-  /// 
+  ///
   /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
   /// When [continuationToken] is provided, starts from that page.
   /// When [paginated] is false (default), returns all results (auto-pagination).
-  Future<dynamic> searchPlaylists(String query, {
+  Future<dynamic> searchPlaylists(
+    String query, {
     bool paginated = false,
     String? continuationToken,
   }) async {
@@ -619,13 +608,13 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    
+
     if (paginated) {
       // Return only first page with pagination info
       dynamic cont = traverse(searchData, ["continuation"]);
       String? nextToken;
       bool hasNext = false;
-      
+
       if (cont is List && cont.isNotEmpty) {
         nextToken = cont[0] as String?;
         hasNext = true;
@@ -633,19 +622,15 @@ class YTMusic {
         nextToken = cont;
         hasNext = true;
       }
-      
+
       final parsedResults = results
           .map(PlaylistParser.parseSearchResult)
           .where((e) => e != null)
           .cast<PlaylistDetailed>()
           .toList();
-          
+
       return PaginatedResult<PlaylistDetailed>(
-        parsedResults, 
-        nextToken, 
-        hasNext, 
-        parsedResults.length
-      );
+          parsedResults, nextToken, hasNext, parsedResults.length);
     } else {
       // Auto-pagination (existing behavior)
       dynamic continuation = traverse(searchData, ["continuation"]);
@@ -695,7 +680,14 @@ class YTMusic {
   }
 
   /// Retrieves a list of up next songs for a given video ID.
-  Future<List<UpNextsDetails>> getUpNexts(String videoId) async {
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  /// When [paginated] is true, returns only first page with pagination metadata.
+  /// When [continuationToken] is provided, starts from that page.
+  Future<dynamic> getUpNexts(
+    String videoId, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
     if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
       throw Exception("Invalid videoId");
     }
@@ -717,54 +709,137 @@ class YTMusic {
 
     final List<dynamic> tabsList = tabs is List ? tabs : [];
 
-    return tabsList.skip(1).map((item) {
-      final renderer = item['playlistPanelVideoRenderer'];
-      final videoId = renderer['videoId'] ?? '';
-      final title = renderer['title']?['runs']?[0]?['text'] ?? '';
+    if (paginated) {
+      // Return only first page with pagination info
+      final allResults = tabsList.skip(1).map((item) {
+        final renderer = item['playlistPanelVideoRenderer'];
+        final videoId = renderer['videoId'] ?? '';
+        final title = renderer['title']?['runs']?[0]?['text'] ?? '';
 
-      // Parse artist information from longBylineText
-      final longBylineRuns = renderer['longBylineText']?['runs'];
-      final artistName = longBylineRuns?[0]?['text'] ?? '';
-      final artistId = longBylineRuns?[0]?['navigationEndpoint']
-          ?['browseEndpoint']?['browseId'];
-
-      // Parse album information (usually at index 2 in longBylineText.runs)
-      AlbumBasic? album;
-      if (longBylineRuns != null && longBylineRuns.length > 2) {
-        final albumName = longBylineRuns[2]?['text'];
-        final albumId = longBylineRuns[2]?['navigationEndpoint']
+        // Parse artist information from longBylineText
+        final longBylineRuns = renderer['longBylineText']?['runs'];
+        final artistName = longBylineRuns?[0]?['text'] ?? '';
+        final artistId = longBylineRuns?[0]?['navigationEndpoint']
             ?['browseEndpoint']?['browseId'];
-        if (albumName != null && albumId != null) {
-          album = AlbumBasic(
-            name: albumName,
-            albumId: albumId,
-          );
+
+        // Parse album information (usually at index 2 in longBylineText.runs)
+        AlbumBasic? album;
+        if (longBylineRuns != null && longBylineRuns.length > 2) {
+          final albumName = longBylineRuns[2]?['text'];
+          final albumId = longBylineRuns[2]?['navigationEndpoint']
+              ?['browseEndpoint']?['browseId'];
+          if (albumName != null && albumId != null) {
+            album = AlbumBasic(
+              name: albumName,
+              albumId: albumId,
+            );
+          }
         }
+
+        // Parse duration
+        final durationText = renderer['lengthText']?['runs']?[0]?['text'];
+        final duration = Parser.parseDuration(durationText) ?? 0;
+
+        // Parse thumbnails
+        final thumbnailsList = renderer['thumbnail']?['thumbnails'];
+        final thumbnails = thumbnailsList is List
+            ? thumbnailsList.map((item) => ThumbnailFull.fromMap(item)).toList()
+            : <ThumbnailFull>[];
+
+        return UpNextsDetails(
+          type: "SONG",
+          videoId: videoId,
+          title: title,
+          artists: ArtistBasic(
+            name: artistName,
+            artistId: artistId,
+          ),
+          album: album,
+          duration: duration,
+          thumbnails: thumbnails,
+        );
+      }).toList();
+
+      // Handle pagination
+      const pageSize = 20;
+      int startIndex = 0;
+
+      // If continuationToken is provided, start from the appropriate page
+      if (continuationToken != null) {
+        if (continuationToken == 'page2') {
+          startIndex = pageSize;
+        } else if (continuationToken == 'page3') {
+          startIndex = pageSize * 2;
+        }
+        // Add more page handling as needed
       }
 
-      // Parse duration
-      final durationText = renderer['lengthText']?['runs']?[0]?['text'];
-      final duration = Parser.parseDuration(durationText) ?? 0;
+      final pageResults = allResults.skip(startIndex).take(pageSize).toList();
+      final hasNext = (startIndex + pageSize) < allResults.length;
+      String? nextToken;
 
-      // Parse thumbnails
-      final thumbnailsList = renderer['thumbnail']?['thumbnails'];
-      final thumbnails = thumbnailsList is List
-          ? thumbnailsList.map((item) => ThumbnailFull.fromMap(item)).toList()
-          : <ThumbnailFull>[];
+      if (hasNext) {
+        if (startIndex == 0) {
+          nextToken = 'page2';
+        } else if (startIndex == pageSize) {
+          nextToken = 'page3';
+        }
+        // Add more page tokens as needed
+      }
 
-      return UpNextsDetails(
-        type: "SONG",
-        videoId: videoId,
-        title: title,
-        artists: ArtistBasic(
-          name: artistName,
-          artistId: artistId,
-        ),
-        album: album,
-        duration: duration,
-        thumbnails: thumbnails,
-      );
-    }).toList();
+      return PaginatedResult<UpNextsDetails>(
+          pageResults, nextToken, hasNext, pageResults.length);
+    } else {
+      // Auto-pagination (existing behavior)
+      return tabsList.skip(1).map((item) {
+        final renderer = item['playlistPanelVideoRenderer'];
+        final videoId = renderer['videoId'] ?? '';
+        final title = renderer['title']?['runs']?[0]?['text'] ?? '';
+
+        // Parse artist information from longBylineText
+        final longBylineRuns = renderer['longBylineText']?['runs'];
+        final artistName = longBylineRuns?[0]?['text'] ?? '';
+        final artistId = longBylineRuns?[0]?['navigationEndpoint']
+            ?['browseEndpoint']?['browseId'];
+
+        // Parse album information (usually at index 2 in longBylineText.runs)
+        AlbumBasic? album;
+        if (longBylineRuns != null && longBylineRuns.length > 2) {
+          final albumName = longBylineRuns[2]?['text'];
+          final albumId = longBylineRuns[2]?['navigationEndpoint']
+              ?['browseEndpoint']?['browseId'];
+          if (albumName != null && albumId != null) {
+            album = AlbumBasic(
+              name: albumName,
+              albumId: albumId,
+            );
+          }
+        }
+
+        // Parse duration
+        final durationText = renderer['lengthText']?['runs']?[0]?['text'];
+        final duration = Parser.parseDuration(durationText) ?? 0;
+
+        // Parse thumbnails
+        final thumbnailsList = renderer['thumbnail']?['thumbnails'];
+        final thumbnails = thumbnailsList is List
+            ? thumbnailsList.map((item) => ThumbnailFull.fromMap(item)).toList()
+            : <ThumbnailFull>[];
+
+        return UpNextsDetails(
+          type: "SONG",
+          videoId: videoId,
+          title: title,
+          artists: ArtistBasic(
+            name: artistName,
+            artistId: artistId,
+          ),
+          album: album,
+          duration: duration,
+          thumbnails: thumbnails,
+        );
+      }).toList();
+    }
   }
 
   /// Retrieves detailed information about a video given its video ID.
