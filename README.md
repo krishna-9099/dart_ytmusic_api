@@ -51,6 +51,48 @@ void main() async {
 }
 ```
 
+## Pagination Support
+
+This package supports two pagination modes for search methods and `getUpNexts`:
+
+### Auto-Pagination (Default)
+By default, all search methods automatically fetch all available results:
+
+```dart
+// Automatically fetches all results
+final songs = await ytmusic.searchSongs('popular music');
+// Returns: List<SongDetailed> with all available songs
+```
+
+### UI-Driven Pagination
+For better performance in UI applications, you can enable paginated mode to load results in pages:
+
+```dart
+// Load first page only (typically 20 results)
+final firstPage = await ytmusic.searchSongs('popular music', paginated: true);
+// Returns: PaginatedResult<SongDetailed>
+
+// Load next page using continuation token
+if (firstPage.hasNextPage) {
+  final nextPage = await ytmusic.searchSongs('popular music',
+    paginated: true,
+    continuationToken: firstPage.continuationToken
+  );
+}
+```
+
+### PaginatedResult Structure
+When using `paginated: true`, methods return a `PaginatedResult<T>` object:
+
+```dart
+class PaginatedResult<T> {
+  final List<T> items;              // Current page results
+  final String? continuationToken;  // Token for next page (null if no more pages)
+  final bool hasNextPage;          // Whether more pages are available
+  final int totalResultsFetched;   // Number of results in current page
+}
+```
+
 ## API Methods
 
 The following methods are available in the `YTMusic` class:
@@ -59,15 +101,15 @@ The following methods are available in the `YTMusic` class:
 
 - `initialize(cookies: String, gl: String, hl: String)`: Initializes the API with the provided cookies, geolocation, and language.
 
-**Search**
+**Search** (All support pagination)
 
 - `getSearchSuggestions(query: String)`: Retrieves search suggestions for a given query.
 - `search(query: String)`: Performs a general search for music with the given query.
-- `searchSongs(query: String)`: Performs a search specifically for songs.
-- `searchVideos(query: String)`: Performs a search specifically for videos.
-- `searchArtists(query: String)`: Performs a search specifically for artists.
-- `searchAlbums(query: String)`: Performs a search specifically for albums.
-- `searchPlaylists(query: String)`: Performs a search specifically for playlists.
+- `searchSongs(query: String, {bool paginated = false, String? continuationToken})`: Performs a search specifically for songs.
+- `searchVideos(query: String, {bool paginated = false, String? continuationToken})`: Performs a search specifically for videos.
+- `searchArtists(query: String, {bool paginated = false, String? continuationToken})`: Performs a search specifically for artists.
+- `searchAlbums(query: String, {bool paginated = false, String? continuationToken})`: Performs a search specifically for albums.
+- `searchPlaylists(query: String, {bool paginated = false, String? continuationToken})`: Performs a search specifically for playlists.
 
 **Retrieve Details**
 
@@ -75,7 +117,7 @@ The following methods are available in the `YTMusic` class:
 - `getVideo(videoId: String)`: Retrieves detailed information about a video given its video ID.
 - `getLyrics(videoId: String)`: Retrieves the lyrics of a song given its video ID.
 - `getTimedLyrics(String videoId)`: Retrieves the timed lyrics (lyrics synchronized with audio playback times) for a song given its video ID.
-- `getUpNexts(String videoId)`: Retrieves a list of suggested up next songs for a given video ID.
+- `getUpNexts(String videoId, {bool paginated = false, String? continuationToken})`: Retrieves a list of suggested up next songs for a given video ID.
 - `getArtist(artistId: String)`: Retrieves detailed information about an artist given its artist ID.
 - `getAlbum(albumId: String)`: Retrieves detailed information about an album given its album ID.
 - `getPlaylist(playlistId: String)`: Retrieves detailed information about a playlist given its playlist ID.
@@ -94,9 +136,101 @@ The following methods are available in the `YTMusic` class:
 
 - `getHomeSections()`: Retrieves the home sections of the music platform.
 
+## Advanced Usage Examples
+
+### Infinite Scroll Implementation
+
+```dart
+import 'package:dart_ytmusic_api/yt_music.dart';
+import 'package:dart_ytmusic_api/types.dart';
+
+class MusicSearchScreen {
+  final YTMusic _ytmusic = YTMusic();
+  List<SongDetailed> _songs = [];
+  String? _continuationToken;
+  bool _hasMorePages = true;
+
+  Future<void> initialize() async {
+    await _ytmusic.initialize();
+  }
+
+  Future<void> searchSongs(String query) async {
+    // Load first page
+    final result = await _ytmusic.searchSongs(query, paginated: true);
+
+    if (result is PaginatedResult<SongDetailed>) {
+      _songs = result.items;
+      _continuationToken = result.continuationToken;
+      _hasMorePages = result.hasNextPage;
+    }
+  }
+
+  Future<void> loadMoreSongs() async {
+    if (!_hasMorePages || _continuationToken == null) return;
+
+    final result = await _ytmusic.searchSongs('your query',
+      paginated: true,
+      continuationToken: _continuationToken
+    );
+
+    if (result is PaginatedResult<SongDetailed>) {
+      _songs.addAll(result.items);
+      _continuationToken = result.continuationToken;
+      _hasMorePages = result.hasNextPage;
+    }
+  }
+}
+```
+
+### Handling Dynamic Return Types
+
+```dart
+Future<void> handleSearchResults(String query) async {
+  final ytmusic = YTMusic();
+  await ytmusic.initialize();
+
+  // Auto-pagination mode
+  final autoResults = await ytmusic.searchSongs(query);
+  if (autoResults is List<SongDetailed>) {
+    print('Found ${autoResults.length} songs (all results)');
+  }
+
+  // Paginated mode
+  final paginatedResults = await ytmusic.searchSongs(query, paginated: true);
+  if (paginatedResults is PaginatedResult<SongDetailed>) {
+    print('Found ${paginatedResults.items.length} songs (first page)');
+    print('Has more pages: ${paginatedResults.hasNextPage}');
+  }
+}
+```
+
+### Up Next Songs with Pagination
+
+```dart
+Future<void> loadUpNextSongs(String videoId) async {
+  final ytmusic = YTMusic();
+  await ytmusic.initialize();
+
+  // Load first 20 up next songs
+  final firstPage = await ytmusic.getUpNexts(videoId, paginated: true);
+  if (firstPage is PaginatedResult<UpNextsDetails>) {
+    print('First page: ${firstPage.items.length} songs');
+
+    // Load more if available
+    if (firstPage.hasNextPage) {
+      final nextPage = await ytmusic.getUpNexts(videoId,
+        paginated: true,
+        continuationToken: firstPage.continuationToken
+      );
+      print('Next page: ${nextPage.items.length} songs');
+    }
+  }
+}
+```
+
 ## Known Issues
 
-- **`getPlaylistVideos` is not working as expected.** The method currently returns an "Invalid request" error. This issue is under investigation. 
+- **`getPlaylistVideos` is not working as expected.** The method currently returns an "Invalid request" error. This issue is under investigation.
 
 ## Contributing
 
