@@ -14,13 +14,30 @@ class PlaylistParser {
         name: traverseString(artist, ["text"]) ?? '',
         artistId: traverseString(artist, ["browseId"]),
       ),
-      videoCount: int.tryParse(
-              traverseList(data, ["tabs", "secondSubtitle", "text"])
-                  .elementAt(2)
-                  .split(" ")
-                  .first
-                  .replaceAll(",", "")) ??
-          0,
+      videoCount: (() {
+        try {
+          final subtitleList = traverseList(data, ["tabs", "secondSubtitle", "text"]);
+          if (subtitleList.isNotEmpty) {
+            // Try to find a string that contains a number followed by "songs"
+            for (final item in subtitleList) {
+              if (item is String) {
+                final match = RegExp(r'(\d+(?:,\d+)*)\s+songs?').firstMatch(item);
+                if (match != null) {
+                  return int.tryParse(match.group(1)?.replaceAll(',', '') ?? '0') ?? 0;
+                }
+              }
+            }
+            // Fallback: try the original logic
+            if (subtitleList.length >= 3) {
+              final text = subtitleList.elementAt(2).toString();
+              return int.tryParse(text.split(" ").first.replaceAll(",", "")) ?? 0;
+            }
+          }
+          return 0;
+        } catch (e) {
+          return 0;
+        }
+      })(),
       thumbnails: traverseList(data, ["tabs", "thumbnails"])
           .map((item) => ThumbnailFull.fromMap(item))
           .toList(),
