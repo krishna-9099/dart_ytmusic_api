@@ -296,6 +296,20 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+    dynamic continuation = traverse(searchData, ["continuation"]);
+    if (continuation is List) {
+      continuation = continuation[0];
+    }
+    while (continuation is! List) {
+      final songsData = await constructRequest(
+        "search",
+        query: {"continuation": continuation},
+      );
+      results
+          .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
+      continuation = traverse(songsData, ["continuation"]);
+    }
+
     final mappedResults = results.map(SongParser.parseSearchResult).toList();
 
     return mappedResults;
@@ -311,9 +325,23 @@ class YTMusic {
       },
     );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(VideoParser.parseSearchResult)
-        .toList();
+    final results =
+        traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+    dynamic continuation = traverse(searchData, ["continuation"]);
+    if (continuation is List) {
+      continuation = continuation[0];
+    }
+    while (continuation is! List) {
+      final videosData = await constructRequest(
+        "search",
+        query: {"continuation": continuation},
+      );
+      results
+          .addAll(traverseList(videosData, ["musicResponsiveListItemRenderer"]));
+      continuation = traverse(videosData, ["continuation"]);
+    }
+
+    return results.map(VideoParser.parseSearchResult).toList();
   }
 
   /// Performs a search specifically for artists with the given query and returns a list of artist details.
