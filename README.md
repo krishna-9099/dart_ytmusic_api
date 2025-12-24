@@ -231,6 +231,7 @@ Future<void> loadUpNextSongs(String videoId) async {
 ## Known Issues
 
 - **`getPlaylistVideos` is not working as expected.** The method currently returns an "Invalid request" error. This issue is under investigation.
+- **RD playlist IDs are not supported by `getPlaylist()` and `getPlaylistVideos()`.** Playlist IDs starting with "RD" (Radio/Recommended playlists) return 400 errors when used with these methods. However, RD playlist IDs are used internally by the `getUpNexts()` method with the format `RDAMVM${videoId}` for retrieving up next songs.
 
 ## Contributing
 
