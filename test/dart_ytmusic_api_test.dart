@@ -445,20 +445,16 @@ void main() {
     await ytmusic.initialize();
 
     // Test with a playlist ID that starts with RD (Radio/Recommended playlist)
-    // Note: RD playlist IDs may not work with getPlaylist method
-    try {
-      final playlist = await ytmusic.getPlaylist('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
-      expect(playlist, isNotNull);
-      expect(playlist.name, isNotEmpty);
-      print('✅ RD playlist ID works with getPlaylist');
-      print('Playlist name: ${playlist.name}');
-      print('Playlist artist: ${playlist.artist.name}');
-      print('Video count: ${playlist.videoCount}');
-      print('Playlist ID: ${playlist.playlistId}');
-    } catch (e) {
-      print('❌ RD playlist ID failed with getPlaylist - Error: $e');
-      print('Note: RD playlist IDs may not be supported by getPlaylist method');
-    }
+    // RD playlist IDs now work with getPlaylist method thanks to VL prefix fix
+    final playlist = await ytmusic
+        .getPlaylist('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
+    expect(playlist, isNotNull);
+    expect(playlist.name, isNotEmpty);
+    print('✅ RD playlist ID works with getPlaylist');
+    print('Playlist name: ${playlist.name}');
+    print('Playlist artist: ${playlist.artist.name}');
+    print('Video count: ${playlist.videoCount}');
+    print('Playlist ID: ${playlist.playlistId}');
   });
 
   test('getPlaylistVideos should work with RD playlist IDs', () async {
@@ -468,7 +464,8 @@ void main() {
     // Test with a playlist ID that starts with RD
     // Note: According to README, getPlaylistVideos is not working as expected
     try {
-      final videos = await ytmusic.getPlaylistVideos('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
+      final videos = await ytmusic
+          .getPlaylistVideos('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
       expect(videos, isNotEmpty);
       print('✅ RD playlist ID works with getPlaylistVideos');
       print('Found ${videos.length} videos in playlist');

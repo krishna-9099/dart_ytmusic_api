@@ -1057,19 +1057,19 @@ class YTMusic {
 
   /// Retrieves detailed information about a playlist given its playlist ID.
   Future<PlaylistFull> getPlaylist(String playlistId) async {
-    if (playlistId.startsWith("PL")) {
+    if (playlistId.startsWith("PL") || playlistId.startsWith("RD")) {
       playlistId = "VL$playlistId";
     }
 
     final data =
         await constructRequest("browse", body: {"browseId": playlistId});
 
-    return PlaylistParser.parse(data, playlistId);
+    return PlaylistParser.parse(data, playlistId.replaceFirst("VL", ""));
   }
 
   /// Retrieves a list of videos from a playlist given its playlist ID.
   Future<List<VideoDetailed>> getPlaylistVideos(String playlistId) async {
-    if (playlistId.startsWith("PL")) {
+    if (playlistId.startsWith("PL") || playlistId.startsWith("RD")) {
       playlistId = "VL$playlistId";
     }
 
