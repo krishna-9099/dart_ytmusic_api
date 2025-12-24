@@ -94,6 +94,19 @@ class TimedLyricsRes {
       'TimedLyricsRes(timedLyricsData: $timedLyricsData, sourceMessage: $sourceMessage)';
 }
 
+class PaginatedResult<T> {
+  final List<T> items;
+  final String? continuationToken;
+  final bool hasNextPage;
+  final int totalResultsFetched;
+
+  PaginatedResult(this.items, this.continuationToken, this.hasNextPage, this.totalResultsFetched);
+
+  @override
+  String toString() =>
+      'PaginatedResult(items: ${items.length}, continuationToken: $continuationToken, hasNextPage: $hasNextPage, totalResultsFetched: $totalResultsFetched)';
+}
+
 class ThumbnailFull {
   final String url;
   final int width;

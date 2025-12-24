@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:dart_ytmusic_api/yt_music.dart';
+import 'package:dart_ytmusic_api/types.dart';
 
 void main() {
   test('Album parser should parse album details correctly', () {});
@@ -27,7 +28,16 @@ void main() {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final results = await ytmusic.searchSongs('popular songs');
+    final result = await ytmusic.searchSongs('popular songs');
+
+    // Handle both List<SongDetailed> and PaginatedResult<SongDetailed>
+    List<SongDetailed> results;
+    if (result is PaginatedResult<SongDetailed>) {
+      results = result.items;
+      print('Paginated result: ${result.totalResultsFetched} songs, hasNextPage: ${result.hasNextPage}');
+    } else {
+      results = result as List<SongDetailed>;
+    }
 
     expect(results, isNotEmpty);
     print('Found ${results.length} songs');
@@ -48,12 +58,47 @@ void main() {
     }
   });
 
+  test('searchSongs with paginated=true should return PaginatedResult',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final result = await ytmusic.searchSongs('popular songs', paginated: true);
+
+    expect(result, isA<PaginatedResult<SongDetailed>>());
+    final paginatedResult = result as PaginatedResult<SongDetailed>;
+
+    expect(paginatedResult.items, isNotEmpty);
+    print('Paginated result: ${paginatedResult.items.length} songs, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
+
+    // Should have a continuation token if there are more pages
+    if (paginatedResult.hasNextPage) {
+      expect(paginatedResult.continuationToken, isNotNull);
+      print('Continuation token available for next page');
+    }
+
+    // Print first few results for inspection
+    for (int i = 0; i < paginatedResult.items.length && i < 3; i++) {
+      final song = paginatedResult.items[i];
+      print('Song $i: ${song.name} by ${song.artist.name}');
+    }
+  });
+
   test('searchVideos should retrieve videos and check for pagination',
       () async {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final results = await ytmusic.searchVideos('popular music videos');
+    final result = await ytmusic.searchVideos('popular music videos');
+
+    // Handle both List<VideoDetailed> and PaginatedResult<VideoDetailed>
+    List<VideoDetailed> results;
+    if (result is PaginatedResult<VideoDetailed>) {
+      results = result.items;
+      print('Paginated result: ${result.totalResultsFetched} videos, hasNextPage: ${result.hasNextPage}');
+    } else {
+      results = result as List<VideoDetailed>;
+    }
 
     expect(results, isNotEmpty);
     print('Found ${results.length} videos');
@@ -74,12 +119,47 @@ void main() {
     }
   });
 
+  test('searchVideos with paginated=true should return PaginatedResult',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final result = await ytmusic.searchVideos('popular music videos', paginated: true);
+
+    expect(result, isA<PaginatedResult<VideoDetailed>>());
+    final paginatedResult = result as PaginatedResult<VideoDetailed>;
+
+    expect(paginatedResult.items, isNotEmpty);
+    print('Paginated result: ${paginatedResult.items.length} videos, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
+
+    // Should have a continuation token if there are more pages
+    if (paginatedResult.hasNextPage) {
+      expect(paginatedResult.continuationToken, isNotNull);
+      print('Continuation token available for next page');
+    }
+
+    // Print first few results for inspection
+    for (int i = 0; i < paginatedResult.items.length && i < 3; i++) {
+      final video = paginatedResult.items[i];
+      print('Video $i: ${video.name} by ${video.artist.name}');
+    }
+  });
+
   test('searchPlaylists should retrieve playlists and check for pagination',
       () async {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final results = await ytmusic.searchPlaylists('popular playlists');
+    final result = await ytmusic.searchPlaylists('popular playlists');
+
+    // Handle both List<PlaylistDetailed> and PaginatedResult<PlaylistDetailed>
+    List<PlaylistDetailed> results;
+    if (result is PaginatedResult<PlaylistDetailed>) {
+      results = result.items;
+      print('Paginated result: ${result.totalResultsFetched} playlists, hasNextPage: ${result.hasNextPage}');
+    } else {
+      results = result as List<PlaylistDetailed>;
+    }
 
     expect(results, isNotEmpty);
     print('Found ${results.length} playlists');
@@ -100,12 +180,47 @@ void main() {
     }
   });
 
+  test('searchPlaylists with paginated=true should return PaginatedResult',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final result = await ytmusic.searchPlaylists('popular playlists', paginated: true);
+
+    expect(result, isA<PaginatedResult<PlaylistDetailed>>());
+    final paginatedResult = result as PaginatedResult<PlaylistDetailed>;
+
+    expect(paginatedResult.items, isNotEmpty);
+    print('Paginated result: ${paginatedResult.items.length} playlists, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
+
+    // Should have a continuation token if there are more pages
+    if (paginatedResult.hasNextPage) {
+      expect(paginatedResult.continuationToken, isNotNull);
+      print('Continuation token available for next page');
+    }
+
+    // Print first few results for inspection
+    for (int i = 0; i < paginatedResult.items.length && i < 3; i++) {
+      final playlist = paginatedResult.items[i];
+      print('Playlist $i: ${playlist.name} by ${playlist.artist.name}');
+    }
+  });
+
   test('searchArtists should retrieve artists and check for pagination',
       () async {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final results = await ytmusic.searchArtists('popular artists');
+    final result = await ytmusic.searchArtists('popular artists');
+
+    // Handle both List<ArtistDetailed> and PaginatedResult<ArtistDetailed>
+    List<ArtistDetailed> results;
+    if (result is PaginatedResult<ArtistDetailed>) {
+      results = result.items;
+      print('Paginated result: ${result.totalResultsFetched} artists, hasNextPage: ${result.hasNextPage}');
+    } else {
+      results = result as List<ArtistDetailed>;
+    }
 
     expect(results, isNotEmpty);
     print('Found ${results.length} artists');
@@ -126,12 +241,47 @@ void main() {
     }
   });
 
+  test('searchArtists with paginated=true should return PaginatedResult',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final result = await ytmusic.searchArtists('popular artists', paginated: true);
+
+    expect(result, isA<PaginatedResult<ArtistDetailed>>());
+    final paginatedResult = result as PaginatedResult<ArtistDetailed>;
+
+    expect(paginatedResult.items, isNotEmpty);
+    print('Paginated result: ${paginatedResult.items.length} artists, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
+
+    // Should have a continuation token if there are more pages
+    if (paginatedResult.hasNextPage) {
+      expect(paginatedResult.continuationToken, isNotNull);
+      print('Continuation token available for next page');
+    }
+
+    // Print first few results for inspection
+    for (int i = 0; i < paginatedResult.items.length && i < 3; i++) {
+      final artist = paginatedResult.items[i];
+      print('Artist $i: ${artist.name}');
+    }
+  });
+
   test('searchAlbums should retrieve albums and check for pagination',
       () async {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final results = await ytmusic.searchAlbums('popular albums');
+    final result = await ytmusic.searchAlbums('popular albums');
+
+    // Handle both List<AlbumDetailed> and PaginatedResult<AlbumDetailed>
+    List<AlbumDetailed> results;
+    if (result is PaginatedResult<AlbumDetailed>) {
+      results = result.items;
+      print('Paginated result: ${result.totalResultsFetched} albums, hasNextPage: ${result.hasNextPage}');
+    } else {
+      results = result as List<AlbumDetailed>;
+    }
 
     expect(results, isNotEmpty);
     print('Found ${results.length} albums');
@@ -149,6 +299,32 @@ void main() {
     } else {
       print(
           'Pagination may not be supported or there are not enough results to paginate.');
+    }
+  });
+
+  test('searchAlbums with paginated=true should return PaginatedResult',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final result = await ytmusic.searchAlbums('popular albums', paginated: true);
+
+    expect(result, isA<PaginatedResult<AlbumDetailed>>());
+    final paginatedResult = result as PaginatedResult<AlbumDetailed>;
+
+    expect(paginatedResult.items, isNotEmpty);
+    print('Paginated result: ${paginatedResult.items.length} albums, hasNextPage: ${paginatedResult.hasNextPage}, totalFetched: ${paginatedResult.totalResultsFetched}');
+
+    // Should have a continuation token if there are more pages
+    if (paginatedResult.hasNextPage) {
+      expect(paginatedResult.continuationToken, isNotNull);
+      print('Continuation token available for next page');
+    }
+
+    // Print first few results for inspection
+    for (int i = 0; i < paginatedResult.items.length && i < 3; i++) {
+      final album = paginatedResult.items[i];
+      print('Album $i: ${album.name} by ${album.artist.name}');
     }
   });
 }

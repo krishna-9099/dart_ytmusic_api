@@ -285,7 +285,14 @@ class YTMusic {
   }
 
   /// Performs a search specifically for songs with the given query and returns a list of song details.
-  Future<List<SongDetailed>> searchSongs(String query) async {
+  /// 
+  /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
+  /// When [continuationToken] is provided, starts from that page.
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  Future<dynamic> searchSongs(String query, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
     final searchData = await constructRequest(
       "search",
       body: {
@@ -296,38 +303,75 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List && continuation.isNotEmpty) {
-      continuation = continuation[0];
-    } else if (continuation is List && continuation.isEmpty) {
-      continuation = null;
-    }
-    while (continuation != null) {
-      final songsData = await constructRequest(
-        "search",
-        query: {"continuation": continuation},
+    
+    if (paginated) {
+      // Return only first page with pagination info
+      dynamic cont = traverse(searchData, ["continuation"]);
+      String? nextToken;
+      bool hasNext = false;
+      
+      if (cont is List && cont.isNotEmpty) {
+        nextToken = cont[0] as String?;
+        hasNext = true;
+      } else if (cont is String && cont.isNotEmpty) {
+        nextToken = cont;
+        hasNext = true;
+      }
+      
+      final parsedResults = results
+          .map(SongParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<SongDetailed>()
+          .toList();
+          
+      return PaginatedResult<SongDetailed>(
+        parsedResults, 
+        nextToken, 
+        hasNext, 
+        parsedResults.length
       );
-      results
-          .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
-      continuation = traverse(songsData, ["continuation"]);
-      if (continuation is List) {
-        if (continuation.isNotEmpty) {
-          continuation = continuation[0];
-        } else {
-          continuation = null;
+    } else {
+      // Auto-pagination (existing behavior)
+      dynamic continuation = traverse(searchData, ["continuation"]);
+      if (continuation is List && continuation.isNotEmpty) {
+        continuation = continuation[0];
+      } else if (continuation is List && continuation.isEmpty) {
+        continuation = null;
+      }
+      while (continuation != null) {
+        final songsData = await constructRequest(
+          "search",
+          query: {"continuation": continuation},
+        );
+        results
+            .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
+        continuation = traverse(songsData, ["continuation"]);
+        if (continuation is List) {
+          if (continuation.isNotEmpty) {
+            continuation = continuation[0];
+          } else {
+            continuation = null;
+          }
         }
       }
-    }
 
-    return results
-        .map(SongParser.parseSearchResult)
-        .where((e) => e != null)
-        .cast<SongDetailed>()
-        .toList();
+      return results
+          .map(SongParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<SongDetailed>()
+          .toList();
+    }
   }
 
   /// Performs a search specifically for videos with the given query and returns a list of video details.
-  Future<List<VideoDetailed>> searchVideos(String query) async {
+  /// 
+  /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
+  /// When [continuationToken] is provided, starts from that page.
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  Future<dynamic> searchVideos(String query, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
     final searchData = await constructRequest(
       "search",
       body: {
@@ -338,38 +382,75 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List && continuation.isNotEmpty) {
-      continuation = continuation[0];
-    } else if (continuation is List && continuation.isEmpty) {
-      continuation = null;
-    }
-    while (continuation != null) {
-      final videosData = await constructRequest(
-        "search",
-        query: {"continuation": continuation},
+    
+    if (paginated) {
+      // Return only first page with pagination info
+      dynamic cont = traverse(searchData, ["continuation"]);
+      String? nextToken;
+      bool hasNext = false;
+      
+      if (cont is List && cont.isNotEmpty) {
+        nextToken = cont[0] as String?;
+        hasNext = true;
+      } else if (cont is String && cont.isNotEmpty) {
+        nextToken = cont;
+        hasNext = true;
+      }
+      
+      final parsedResults = results
+          .map(VideoParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<VideoDetailed>()
+          .toList();
+          
+      return PaginatedResult<VideoDetailed>(
+        parsedResults, 
+        nextToken, 
+        hasNext, 
+        parsedResults.length
       );
-      results.addAll(
-          traverseList(videosData, ["musicResponsiveListItemRenderer"]));
-      continuation = traverse(videosData, ["continuation"]);
-      if (continuation is List) {
-        if (continuation.isNotEmpty) {
-          continuation = continuation[0];
-        } else {
-          continuation = null;
+    } else {
+      // Auto-pagination (existing behavior)
+      dynamic continuation = traverse(searchData, ["continuation"]);
+      if (continuation is List && continuation.isNotEmpty) {
+        continuation = continuation[0];
+      } else if (continuation is List && continuation.isEmpty) {
+        continuation = null;
+      }
+      while (continuation != null) {
+        final videosData = await constructRequest(
+          "search",
+          query: {"continuation": continuation},
+        );
+        results.addAll(
+            traverseList(videosData, ["musicResponsiveListItemRenderer"]));
+        continuation = traverse(videosData, ["continuation"]);
+        if (continuation is List) {
+          if (continuation.isNotEmpty) {
+            continuation = continuation[0];
+          } else {
+            continuation = null;
+          }
         }
       }
-    }
 
-    return results
-        .map(VideoParser.parseSearchResult)
-        .where((e) => e != null)
-        .cast<VideoDetailed>()
-        .toList();
+      return results
+          .map(VideoParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<VideoDetailed>()
+          .toList();
+    }
   }
 
   /// Performs a search specifically for artists with the given query and returns a list of artist details.
-  Future<List<ArtistDetailed>> searchArtists(String query) async {
+  /// 
+  /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
+  /// When [continuationToken] is provided, starts from that page.
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  Future<dynamic> searchArtists(String query, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
     final searchData = await constructRequest(
       "search",
       body: {
@@ -380,38 +461,75 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List && continuation.isNotEmpty) {
-      continuation = continuation[0];
-    } else if (continuation is List && continuation.isEmpty) {
-      continuation = null;
-    }
-    while (continuation != null) {
-      final artistsData = await constructRequest(
-        "search",
-        query: {"continuation": continuation},
+    
+    if (paginated) {
+      // Return only first page with pagination info
+      dynamic cont = traverse(searchData, ["continuation"]);
+      String? nextToken;
+      bool hasNext = false;
+      
+      if (cont is List && cont.isNotEmpty) {
+        nextToken = cont[0] as String?;
+        hasNext = true;
+      } else if (cont is String && cont.isNotEmpty) {
+        nextToken = cont;
+        hasNext = true;
+      }
+      
+      final parsedResults = results
+          .map(ArtistParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<ArtistDetailed>()
+          .toList();
+          
+      return PaginatedResult<ArtistDetailed>(
+        parsedResults, 
+        nextToken, 
+        hasNext, 
+        parsedResults.length
       );
-      results.addAll(
-          traverseList(artistsData, ["musicResponsiveListItemRenderer"]));
-      continuation = traverse(artistsData, ["continuation"]);
-      if (continuation is List) {
-        if (continuation.isNotEmpty) {
-          continuation = continuation[0];
-        } else {
-          continuation = null;
+    } else {
+      // Auto-pagination (existing behavior)
+      dynamic continuation = traverse(searchData, ["continuation"]);
+      if (continuation is List && continuation.isNotEmpty) {
+        continuation = continuation[0];
+      } else if (continuation is List && continuation.isEmpty) {
+        continuation = null;
+      }
+      while (continuation != null) {
+        final artistsData = await constructRequest(
+          "search",
+          query: {"continuation": continuation},
+        );
+        results.addAll(
+            traverseList(artistsData, ["musicResponsiveListItemRenderer"]));
+        continuation = traverse(artistsData, ["continuation"]);
+        if (continuation is List) {
+          if (continuation.isNotEmpty) {
+            continuation = continuation[0];
+          } else {
+            continuation = null;
+          }
         }
       }
-    }
 
-    return results
-        .map(ArtistParser.parseSearchResult)
-        .where((e) => e != null)
-        .cast<ArtistDetailed>()
-        .toList();
+      return results
+          .map(ArtistParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<ArtistDetailed>()
+          .toList();
+    }
   }
 
   /// Performs a search specifically for albums with the given query and returns a list of album details.
-  Future<List<AlbumDetailed>> searchAlbums(String query) async {
+  /// 
+  /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
+  /// When [continuationToken] is provided, starts from that page.
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  Future<dynamic> searchAlbums(String query, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
     final searchData = await constructRequest(
       "search",
       body: {
@@ -422,38 +540,75 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List && continuation.isNotEmpty) {
-      continuation = continuation[0];
-    } else if (continuation is List && continuation.isEmpty) {
-      continuation = null;
-    }
-    while (continuation != null) {
-      final albumsData = await constructRequest(
-        "search",
-        query: {"continuation": continuation},
+    
+    if (paginated) {
+      // Return only first page with pagination info
+      dynamic cont = traverse(searchData, ["continuation"]);
+      String? nextToken;
+      bool hasNext = false;
+      
+      if (cont is List && cont.isNotEmpty) {
+        nextToken = cont[0] as String?;
+        hasNext = true;
+      } else if (cont is String && cont.isNotEmpty) {
+        nextToken = cont;
+        hasNext = true;
+      }
+      
+      final parsedResults = results
+          .map(AlbumParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<AlbumDetailed>()
+          .toList();
+          
+      return PaginatedResult<AlbumDetailed>(
+        parsedResults, 
+        nextToken, 
+        hasNext, 
+        parsedResults.length
       );
-      results.addAll(
-          traverseList(albumsData, ["musicResponsiveListItemRenderer"]));
-      continuation = traverse(albumsData, ["continuation"]);
-      if (continuation is List) {
-        if (continuation.isNotEmpty) {
-          continuation = continuation[0];
-        } else {
-          continuation = null;
+    } else {
+      // Auto-pagination (existing behavior)
+      dynamic continuation = traverse(searchData, ["continuation"]);
+      if (continuation is List && continuation.isNotEmpty) {
+        continuation = continuation[0];
+      } else if (continuation is List && continuation.isEmpty) {
+        continuation = null;
+      }
+      while (continuation != null) {
+        final albumsData = await constructRequest(
+          "search",
+          query: {"continuation": continuation},
+        );
+        results.addAll(
+            traverseList(albumsData, ["musicResponsiveListItemRenderer"]));
+        continuation = traverse(albumsData, ["continuation"]);
+        if (continuation is List) {
+          if (continuation.isNotEmpty) {
+            continuation = continuation[0];
+          } else {
+            continuation = null;
+          }
         }
       }
-    }
 
-    return results
-        .map(AlbumParser.parseSearchResult)
-        .where((e) => e != null)
-        .cast<AlbumDetailed>()
-        .toList();
+      return results
+          .map(AlbumParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<AlbumDetailed>()
+          .toList();
+    }
   }
 
   /// Performs a search specifically for playlists with the given query and returns a list of playlist details.
-  Future<List<PlaylistDetailed>> searchPlaylists(String query) async {
+  /// 
+  /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
+  /// When [continuationToken] is provided, starts from that page.
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  Future<dynamic> searchPlaylists(String query, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
     final searchData = await constructRequest(
       "search",
       body: {
@@ -464,34 +619,64 @@ class YTMusic {
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    dynamic continuation = traverse(searchData, ["continuation"]);
-    if (continuation is List && continuation.isNotEmpty) {
-      continuation = continuation[0];
-    } else if (continuation is List && continuation.isEmpty) {
-      continuation = null;
-    }
-    while (continuation != null) {
-      final playlistsData = await constructRequest(
-        "search",
-        query: {"continuation": continuation},
+    
+    if (paginated) {
+      // Return only first page with pagination info
+      dynamic cont = traverse(searchData, ["continuation"]);
+      String? nextToken;
+      bool hasNext = false;
+      
+      if (cont is List && cont.isNotEmpty) {
+        nextToken = cont[0] as String?;
+        hasNext = true;
+      } else if (cont is String && cont.isNotEmpty) {
+        nextToken = cont;
+        hasNext = true;
+      }
+      
+      final parsedResults = results
+          .map(PlaylistParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<PlaylistDetailed>()
+          .toList();
+          
+      return PaginatedResult<PlaylistDetailed>(
+        parsedResults, 
+        nextToken, 
+        hasNext, 
+        parsedResults.length
       );
-      results.addAll(
-          traverseList(playlistsData, ["musicResponsiveListItemRenderer"]));
-      continuation = traverse(playlistsData, ["continuation"]);
-      if (continuation is List) {
-        if (continuation.isNotEmpty) {
-          continuation = continuation[0];
-        } else {
-          continuation = null;
+    } else {
+      // Auto-pagination (existing behavior)
+      dynamic continuation = traverse(searchData, ["continuation"]);
+      if (continuation is List && continuation.isNotEmpty) {
+        continuation = continuation[0];
+      } else if (continuation is List && continuation.isEmpty) {
+        continuation = null;
+      }
+      while (continuation != null) {
+        final playlistsData = await constructRequest(
+          "search",
+          query: {"continuation": continuation},
+        );
+        results.addAll(
+            traverseList(playlistsData, ["musicResponsiveListItemRenderer"]));
+        continuation = traverse(playlistsData, ["continuation"]);
+        if (continuation is List) {
+          if (continuation.isNotEmpty) {
+            continuation = continuation[0];
+          } else {
+            continuation = null;
+          }
         }
       }
-    }
 
-    return results
-        .map(PlaylistParser.parseSearchResult)
-        .where((e) => e != null)
-        .cast<PlaylistDetailed>()
-        .toList();
+      return results
+          .map(PlaylistParser.parseSearchResult)
+          .where((e) => e != null)
+          .cast<PlaylistDetailed>()
+          .toList();
+    }
   }
 
   /// Retrieves detailed information about a song given its video ID.
