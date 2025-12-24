@@ -233,6 +233,8 @@ Future<void> loadUpNextSongs(String videoId) async {
 - **`getPlaylistVideos` is not working as expected.** The method currently returns an "Invalid request" error. This issue is under investigation.
 - **RD playlist IDs are not supported by `getPlaylist()` and `getPlaylistVideos()`.** Playlist IDs starting with "RD" (Radio/Recommended playlists) return 400 errors when used with these methods. However, RD playlist IDs are used internally by the `getUpNexts()` method with the format `RDAMVM${videoId}` for retrieving up next songs.
 
+  **Note:** This is a known limitation across YouTube Music API implementations. A similar issue was reported in the original TypeScript library ([ts-npm-ytmusic-api#57](https://github.com/zS1L3NT/ts-npm-ytmusic-api/issues/57)), and a fix was implemented in a fork that treats RD playlists the same as regular playlists by adding a "VL" prefix for the browse request. This suggests the issue could be resolved with similar modifications to support RD playlist fetching.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to open issues, submit pull requests, or reach out if you have any questions.
