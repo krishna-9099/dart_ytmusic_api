@@ -294,13 +294,24 @@ class YTMusic {
     bool paginated = false,
     String? continuationToken,
   }) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {
-        "query": query,
-        "params": "Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D"
-      },
-    );
+    dynamic searchData;
+
+    if (continuationToken != null) {
+      // Use continuation token for next page
+      searchData = await constructRequest(
+        "search",
+        query: {"continuation": continuationToken},
+      );
+    } else {
+      // Initial search request
+      searchData = await constructRequest(
+        "search",
+        body: {
+          "query": query,
+          "params": "Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D"
+        },
+      );
+    }
 
     final results =
         traverseList(searchData, ["musicResponsiveListItemRenderer"]);

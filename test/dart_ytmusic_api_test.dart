@@ -450,7 +450,8 @@ void main() {
         .getPlaylist('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
     expect(playlist, isNotNull);
     expect(playlist.name, isNotEmpty);
-    expect(playlist.videoCount, greaterThan(0)); // Should now have proper video count
+    expect(playlist.videoCount,
+        greaterThan(0)); // Should now have proper video count
     print('✅ RD playlist ID works with getPlaylist');
     print('Playlist name: ${playlist.name}');
     print('Playlist artist: ${playlist.artist.name}');

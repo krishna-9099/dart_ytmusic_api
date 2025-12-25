@@ -16,21 +16,26 @@ class PlaylistParser {
       ),
       videoCount: (() {
         try {
-          final subtitleList = traverseList(data, ["tabs", "secondSubtitle", "text"]);
+          final subtitleList =
+              traverseList(data, ["tabs", "secondSubtitle", "text"]);
           if (subtitleList.isNotEmpty) {
             // Try to find a string that contains a number followed by "songs"
             for (final item in subtitleList) {
               if (item is String) {
-                final match = RegExp(r'(\d+(?:,\d+)*)\s+songs?').firstMatch(item);
+                final match =
+                    RegExp(r'(\d+(?:,\d+)*)\s+songs?').firstMatch(item);
                 if (match != null) {
-                  return int.tryParse(match.group(1)?.replaceAll(',', '') ?? '0') ?? 0;
+                  return int.tryParse(
+                          match.group(1)?.replaceAll(',', '') ?? '0') ??
+                      0;
                 }
               }
             }
             // Fallback: try the original logic
             if (subtitleList.length >= 3) {
               final text = subtitleList.elementAt(2).toString();
-              return int.tryParse(text.split(" ").first.replaceAll(",", "")) ?? 0;
+              return int.tryParse(text.split(" ").first.replaceAll(",", "")) ??
+                  0;
             }
           }
           return 0;
