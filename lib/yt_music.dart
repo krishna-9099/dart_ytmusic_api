@@ -96,9 +96,8 @@ class YTMusic {
       html = ytMusicHomeRawHtml!;
     } else {
       final cookies = await cookieJar.loadForRequest(uri);
-      final cookieString = cookies
-          .map((cookie) => '${cookie.name}=${cookie.value}')
-          .join('; ');
+      final cookieString =
+          cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
       final headers = {..._baseHeaders};
       if (cookieString.isNotEmpty) {
         headers['cookie'] = cookieString;
@@ -272,17 +271,94 @@ class YTMusic {
   }
 
   /// Performs a search for music with the given query and returns a list of search results.
-  Future<List<SearchResult>> search(String query) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {"query": query, "params": null},
-    );
+  /// Performs a general search with the given query and returns a list of mixed search results.
+  ///
+  /// When [paginated] is true, returns a [PaginatedResult] with first page results and continuation token.
+  /// When [continuationToken] is provided, starts from that page.
+  /// When [paginated] is false (default), returns all results (auto-pagination).
+  Future<dynamic> search(
+    String query, {
+    bool paginated = false,
+    String? continuationToken,
+  }) async {
+    dynamic searchData;
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(SearchParser.parse)
-        .where((e) => e != null)
-        .cast<SearchResult>()
-        .toList();
+    if (continuationToken != null) {
+      // Use continuation token for next page
+      searchData = await constructRequest(
+        "search",
+        query: {"continuation": continuationToken},
+      );
+    } else {
+      // Initial search request
+      searchData = await constructRequest(
+        "search",
+        body: {"query": query, "params": null},
+      );
+    }
+
+    final results =
+        traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+
+    if (paginated) {
+      // Return only first page with pagination info
+      dynamic cont = traverse(searchData, ["continuation"]);
+      String? nextToken;
+      bool hasNext = false;
+
+      if (cont is List && cont.isNotEmpty) {
+        nextToken = cont[0] as String?;
+        hasNext = true;
+      } else if (cont is String && cont.isNotEmpty) {
+        nextToken = cont;
+        hasNext = true;
+      }
+
+      final parsedResults = results
+          .map(SearchParser.parse)
+          .where((e) => e != null)
+          .cast<SearchResult>()
+          .toList();
+
+      return PaginatedResult<SearchResult>(
+          parsedResults, nextToken, hasNext, parsedResults.length);
+    } else {
+      // Auto-pagination (existing behavior)
+      dynamic continuation = traverse(searchData, ["continuation"]);
+      if (continuation is List && continuation.isNotEmpty) {
+        continuation = continuation[0];
+      } else if (continuation is List && continuation.isEmpty) {
+        continuation = null;
+      }
+      final parsedResults = results
+          .map(SearchParser.parse)
+          .where((e) => e != null)
+          .cast<SearchResult>()
+          .toList();
+
+      while (continuation != null) {
+        final nextData = await constructRequest(
+          "search",
+          query: {"continuation": continuation},
+        );
+        final nextResults =
+            traverseList(nextData, ["musicResponsiveListItemRenderer"])
+                .map(SearchParser.parse)
+                .where((e) => e != null)
+                .cast<SearchResult>()
+                .toList();
+        parsedResults.addAll(nextResults);
+
+        continuation = traverse(nextData, ["continuation"]);
+        if (continuation is List && continuation.isNotEmpty) {
+          continuation = continuation[0];
+        } else if (continuation is List && continuation.isEmpty) {
+          continuation = null;
+        }
+      }
+
+      return parsedResults;
+    }
   }
 
   /// Performs a search specifically for songs with the given query and returns a list of song details.
