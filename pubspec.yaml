@@ -10,6 +10,7 @@ dependencies:
   cookie_jar: ^4.0.8
   html: ^0.15.6
   http: ^1.6.0
+  universal_io: ^2.2.2
 
 dev_dependencies:
   lints:

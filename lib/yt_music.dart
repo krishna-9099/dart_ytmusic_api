@@ -96,8 +96,9 @@ class YTMusic {
       html = ytMusicHomeRawHtml!;
     } else {
       final cookies = await cookieJar.loadForRequest(uri);
-      final cookieString =
-          cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
+      final cookieString = cookies
+          .map((cookie) => '${cookie.name}=${cookie.value}')
+          .join('; ');
       final headers = {..._baseHeaders};
       if (cookieString.isNotEmpty) {
         headers['cookie'] = cookieString;
