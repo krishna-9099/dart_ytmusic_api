@@ -163,6 +163,7 @@ class AlbumBasic {
 }
 
 class SongDetailed implements SearchResult {
+  @override
   final String type;
   final String videoId;
   final String name;
@@ -488,6 +489,10 @@ class PlaylistFull {
   final ArtistBasic artist;
   final int videoCount;
   final List<ThumbnailFull> thumbnails;
+  final List<ThumbnailFull>? backgroundThumbnails;
+  final List<PlaylistDetailed> relatedPlaylists;
+  final int? year;
+  final int? viewCount;
 
   PlaylistFull({
     required this.type,
@@ -496,6 +501,10 @@ class PlaylistFull {
     required this.artist,
     required this.videoCount,
     required this.thumbnails,
+    this.backgroundThumbnails = const [],
+    this.relatedPlaylists = const [],
+    this.year,
+    this.viewCount,
   });
 
   // Construtor nomeado para criar uma PlaylistFull a partir de um mapa
@@ -507,7 +516,16 @@ class PlaylistFull {
         videoCount = map['videoCount'] as int,
         thumbnails = (map['thumbnails'] as List)
             .map((item) => ThumbnailFull.fromMap(item))
-            .toList();
+            .toList(),
+        backgroundThumbnails = ((map['backgroundThumbnails'] as List?) ?? [])
+            .map((item) => ThumbnailFull.fromMap(item))
+            .toList(),
+        relatedPlaylists = (map['relatedPlaylists'] as List?)
+                ?.map((item) => PlaylistDetailed.fromMap(item))
+                .toList() ??
+            [],
+        year = map['year'] as int?,
+        viewCount = map['viewCount'] as int?;
 }
 
 // SearchResult é uma union de vários tipos, então é uma interface

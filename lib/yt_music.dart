@@ -1187,8 +1187,8 @@ class YTMusic {
     return album..songs = [...filteredSongs, ...songsThatArentInArtist];
   }
 
-  /// Retrieves detailed information about a playlist given its playlist ID.
-  Future<PlaylistFull> getPlaylist(String playlistId) async {
+  /// Retrieves detailed information about a playlist given its playlist ID, including related playlists.
+  Future<PlaylistFull> getPlaylistWithRelated(String playlistId) async {
     if (playlistId.startsWith("PL") || playlistId.startsWith("RD")) {
       playlistId = "VL$playlistId";
     }
@@ -1196,7 +1196,31 @@ class YTMusic {
     final data =
         await constructRequest("browse", body: {"browseId": playlistId});
 
-    return PlaylistParser.parse(data, playlistId.replaceFirst("VL", ""));
+    // Get continuation token
+    dynamic continuation = traverse(data, ["continuation"]);
+    if (continuation is List && continuation.isNotEmpty) {
+      continuation = continuation[0];
+    }
+
+    List<PlaylistDetailed> relatedPlaylists = [];
+    if (continuation != null && continuation is String) {
+      final continuationData = await constructRequest("browse",
+          query: {"continuation": continuation});
+      relatedPlaylists = PlaylistParser.parseRelatedPlaylists(continuationData);
+    }
+
+    final playlist =
+        PlaylistParser.parse(data, playlistId.replaceFirst("VL", ""));
+    return PlaylistFull(
+      type: playlist.type,
+      playlistId: playlist.playlistId,
+      name: playlist.name,
+      artist: playlist.artist,
+      videoCount: playlist.videoCount,
+      thumbnails: playlist.thumbnails,
+      backgroundThumbnails: playlist.backgroundThumbnails,
+      relatedPlaylists: relatedPlaylists,
+    );
   }
 
   /// Retrieves a list of videos from a playlist given its playlist ID.

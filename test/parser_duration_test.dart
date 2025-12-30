@@ -9,7 +9,8 @@ void main() {
 
   test('parseDurationOrZero parses common time formats', () {
     expect(Parser.parseDurationOrZero('3:35'), equals(3 * 60 + 35));
-    expect(Parser.parseDurationOrZero('1:02:15'), equals(1 * 3600 + 2 * 60 + 15));
+    expect(
+        Parser.parseDurationOrZero('1:02:15'), equals(1 * 3600 + 2 * 60 + 15));
   });
 
   test('parseDurationOrZero handles strings with extra text', () {
