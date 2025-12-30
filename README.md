@@ -235,6 +235,8 @@ Future<void> loadUpNextSongs(String videoId) async {
 
   **Note:** This was a known limitation across YouTube Music API implementations. A similar issue was reported in the original TypeScript library ([ts-npm-ytmusic-api#57](https://github.com/zS1L3NT/ts-npm-ytmusic-api/issues/57)), and a fix was implemented in a fork that treats RD playlists the same as regular playlists by adding a "VL" prefix for the browse request. This approach has now been applied to this Dart implementation.
 
+- **Duration parsing fallback:** `getUpNexts` extracts item length from the renderer's `lengthText` and parses it into seconds. When `lengthText` is missing or cannot be parsed, the library falls back to a duration value of `0`. Use `UpNextsDetails.duration == 0` to detect unknown durations.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to open issues, submit pull requests, or reach out if you have any questions.

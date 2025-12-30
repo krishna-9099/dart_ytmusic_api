@@ -9,8 +9,8 @@ import 'package:dart_ytmusic_api/utils/traverse.dart';
 class SearchParser {
   static SearchResult? parse(dynamic item) {
     final flexColumns = traverseList(item, ["flexColumns"]);
-    final type =
-        traverseList(flexColumns[1], ["runs", "text"]).firstOrNull as String?;
+    final typeList = traverseList(flexColumns[1], ["runs", "text"]);
+    final type = typeList.isNotEmpty ? typeList.first as String? : null;
 
     final parsers = {
       "Song": SongParser.parseSearchResult,

@@ -870,7 +870,7 @@ class YTMusic {
 
         // Parse duration
         final durationText = renderer['lengthText']?['runs']?[0]?['text'];
-        final duration = Parser.parseDuration(durationText) ?? 0;
+        final duration = Parser.parseDurationOrZero(durationText);
 
         // Parse thumbnails
         final thumbnailsList = renderer['thumbnail']?['thumbnails'];
@@ -950,7 +950,7 @@ class YTMusic {
 
         // Parse duration
         final durationText = renderer['lengthText']?['runs']?[0]?['text'];
-        final duration = Parser.parseDuration(durationText) ?? 0;
+        final duration = Parser.parseDurationOrZero(durationText);
 
         // Parse thumbnails
         final thumbnailsList = renderer['thumbnail']?['thumbnails'];

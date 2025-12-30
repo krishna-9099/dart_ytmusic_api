@@ -74,10 +74,12 @@ class AlbumParser {
   static AlbumDetailed parseArtistAlbum(dynamic item, ArtistBasic artistBasic) {
     return AlbumDetailed(
       type: "ALBUM",
-      albumId: traverseList(item, ["browseId"])
-              .where((element) => element != artistBasic.artistId)
-              .firstOrNull ??
-          '',
+      albumId: (() {
+        final candidates = traverseList(item, ["browseId"])
+            .where((element) => element != artistBasic.artistId)
+            .toList();
+        return candidates.isNotEmpty ? candidates.first as String : '';
+      })(),
       playlistId:
           traverseString(item, ["thumbnailOverlay", "playlistId"]) ?? '',
       name: traverseString(item, ["title", "text"]) ?? '',

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:math';
 import 'package:test/test.dart';
 import 'package:dart_ytmusic_api/yt_music.dart';
 import 'package:dart_ytmusic_api/types.dart';
@@ -521,5 +523,127 @@ void main() {
     // This is used in the getUpNexts method: "playlistId": "RDAMVM$videoId"
     final expectedPlaylistId = 'RDAMVM_LD-Y4Bf8Zwn8';
     print('Internal playlist ID format used: $expectedPlaylistId');
+  });
+
+  test('getUpNexts durations should be present or zero', () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final result = await ytmusic.getUpNexts('LDY4Bf8Zwn8');
+
+    // Normalize to List<UpNextsDetails>
+    List<UpNextsDetails> results;
+    if (result is PaginatedResult<UpNextsDetails>) {
+      results = result.items;
+    } else {
+      results = result as List<UpNextsDetails>;
+    }
+
+    expect(results, isNotEmpty);
+
+    // At least one item should have a positive duration
+    final hasPositiveDuration = results.any((s) => s.duration > 0);
+    expect(hasPositiveDuration, isTrue,
+        reason: 'At least one up next song should have a positive duration');
+
+    // Each duration must be an int and non-negative
+    for (final s in results.take(8)) {
+      print('UpNext: ${s.title} duration: ${s.duration}');
+      expect(s.duration, isA<int>());
+      expect(s.duration >= 0, isTrue);
+    }
+  });
+
+  test('getSong should retrieve song details including streaming formats',
+      () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final song = await ytmusic.getSong('6Mfe_tMuDfg');
+
+    expect(song, isA<SongFull>());
+    expect(song.videoId, equals('6Mfe_tMuDfg'));
+    expect(song.name, isNotEmpty);
+    expect(song.artist.name, isNotEmpty);
+    expect(song.duration, greaterThan(0));
+    expect(song.thumbnails, isNotEmpty);
+
+    print('✅ getSong retrieved song details:');
+    print('Video ID: ${song.videoId}');
+    print('Name: ${song.name}');
+    print('Artist: ${song.artist.name}');
+    print('Duration: ${song.duration} seconds');
+    print('Thumbnails count: ${song.thumbnails.length}');
+
+    // Check streaming formats
+    print('Formats count: ${song.formats.length}');
+    if (song.formats.isNotEmpty) {
+      print('First format sample:');
+      print(song.formats[0]);
+    }
+
+    print('Adaptive Formats count: ${song.adaptiveFormats.length}');
+    if (song.adaptiveFormats.isNotEmpty) {
+      print('First adaptive format sample:');
+      print(song.adaptiveFormats[0]);
+
+      // Look for audio-only formats
+      final audioFormats = song.adaptiveFormats.where((format) {
+        final mimeType = format['mimeType']?.toString() ?? '';
+        return mimeType.contains('audio/');
+      }).toList();
+
+      print('Audio-only formats found: ${audioFormats.length}');
+      for (int i = 0; i < audioFormats.length; i++) {
+        final format = audioFormats[i];
+        print('Audio Format ${i + 1}:');
+        print('  itag: ${format['itag']}');
+        print('  mimeType: ${format['mimeType']}');
+        print('  bitrate: ${format['bitrate']}');
+        print('  audioQuality: ${format['audioQuality']}');
+        print('  contentLength: ${format['contentLength']}');
+        print('  approxDurationMs: ${format['approxDurationMs']}');
+        print('');
+      }
+
+      if (audioFormats.isNotEmpty) {
+        print('Best audio format (highest bitrate):');
+        audioFormats.sort((a, b) {
+          final aBitrate = int.tryParse(a['bitrate']?.toString() ?? '0') ?? 0;
+          final bBitrate = int.tryParse(b['bitrate']?.toString() ?? '0') ?? 0;
+          return bBitrate.compareTo(aBitrate);
+        });
+        final bestAudio = audioFormats.first;
+        print(
+            'itag: ${bestAudio['itag']}, mimeType: ${bestAudio['mimeType']}, bitrate: ${bestAudio['bitrate']}');
+        print('Audio URL: ${bestAudio['url'] ?? bestAudio['signatureCipher']}');
+
+        // Print detailed information about the signatureCipher
+        final signatureCipher = bestAudio['signatureCipher'] as String?;
+        if (signatureCipher != null) {
+          print('\n🔍 SignatureCipher Analysis:');
+          print('Raw signatureCipher: $signatureCipher');
+
+          try {
+            // Parse the signatureCipher to extract components
+            final params = Uri.splitQueryString(signatureCipher);
+            print('Parsed parameters:');
+            params.forEach((key, value) {
+              if (key == 's') {
+                print('  $key: $value');
+              } else if (key == 'url') {
+                print('  $key: $value)');
+              } else {
+                print('  $key: $value');
+              }
+            });
+          } catch (e) {
+            print('❌ Error parsing signatureCipher: $e');
+          }
+        } else {
+          print('❌ No signatureCipher found');
+        }
+      }
+    }
   });
 }

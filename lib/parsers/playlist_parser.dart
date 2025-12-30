@@ -4,15 +4,106 @@ import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class PlaylistParser {
   static PlaylistFull parse(dynamic data, String playlistId) {
-    final artist = traverse(data, ["tabs", "straplineTextOne"]);
+    // Try several common locations for the playlist author/owner.
+    String? artistName = traverseString(
+            data, ["tabs", "straplineTextOne", "text"]) ??
+        traverseString(data, ["tabs", "straplineTextOne", "runs", "text"]) ??
+        traverseString(data, [
+          "header",
+          "musicDetailHeaderRenderer",
+          "bylineText",
+          "runs",
+          "text"
+        ]) ??
+        traverseString(data, [
+          "header",
+          "musicDetailHeaderRenderer",
+          "subtitle",
+          "runs",
+          "text"
+        ]) ??
+        traverseString(data, ["metadata", "ownerText", "runs", "text"]) ??
+        // Some playlist pages put the owner in a facepile under the playlist header.
+        traverseString(data, [
+          "contents",
+          "twoColumnBrowseResultsRenderer",
+          "secondaryContents",
+          "sectionListRenderer",
+          "contents",
+          "musicPlaylistShelfRenderer",
+          "facepile",
+          "text",
+          "content",
+        ]) ??
+        traverseString(data, [
+          "contents",
+          "twoColumnBrowseResultsRenderer",
+          "tabs",
+          "tabRenderer",
+          "content",
+          "sectionListRenderer",
+          "contents",
+          "musicResponsiveHeaderRenderer",
+          "facepile",
+          "text",
+          "content",
+        ]);
+
+    String? artistId =
+        traverseString(data, ["tabs", "straplineTextOne", "browseId"]) ??
+            traverseString(
+                data, ["tabs", "straplineTextOne", "runs", "browseId"]) ??
+            traverseString(data, [
+              "header",
+              "musicDetailHeaderRenderer",
+              "bylineText",
+              "runs",
+              "browseId"
+            ]) ??
+            traverseString(data, ["metadata", "ownerText", "runs", "browseId"]);
+
+    // Try to find owner browseId from facepile on playlist header
+    artistId ??= traverseString(data, [
+      "contents",
+      "twoColumnBrowseResultsRenderer",
+      "secondaryContents",
+      "sectionListRenderer",
+      "contents",
+      "musicPlaylistShelfRenderer",
+      "facepile",
+      "rendererContext",
+      "commandContext",
+      "onTap",
+      "innertubeCommand",
+      "browseEndpoint",
+      "browseId",
+    ]);
+
+    artistId ??= traverseString(data, [
+      "contents",
+      "twoColumnBrowseResultsRenderer",
+      "tabs",
+      "tabRenderer",
+      "content",
+      "sectionListRenderer",
+      "contents",
+      "musicResponsiveHeaderRenderer",
+      "facepile",
+      "rendererContext",
+      "commandContext",
+      "onTap",
+      "innertubeCommand",
+      "browseEndpoint",
+      "browseId",
+    ]);
 
     return PlaylistFull(
       type: "PLAYLIST",
       playlistId: playlistId,
       name: traverseString(data, ["tabs", "title", "text"]) ?? '',
       artist: ArtistBasic(
-        name: traverseString(artist, ["text"]) ?? '',
-        artistId: traverseString(artist, ["browseId"]),
+        name: artistName ?? '',
+        artistId: artistId,
       ),
       videoCount: (() {
         try {

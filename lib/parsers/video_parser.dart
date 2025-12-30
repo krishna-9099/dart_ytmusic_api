@@ -65,10 +65,12 @@ class VideoParser {
   }
 
   static VideoDetailed? parsePlaylistVideo(dynamic item) {
-    final flexColumns =
-        traverseList(item, ['flexColumns', 'runs']).expand((e) => e).toList();
-    final fixedColumns =
-        traverseList(item, ['fixedColumns', 'runs']).expand((e) => e).toList();
+    final flexColumns = traverseList(item, ['flexColumns', 'runs'])
+        .expand((e) => e is List ? e : [e])
+        .toList();
+    final fixedColumns = traverseList(item, ['fixedColumns', 'runs'])
+        .expand((e) => e is List ? e : [e])
+        .toList();
 
     final title = flexColumns.firstWhere(isTitle,
         orElse: () => flexColumns.isNotEmpty ? flexColumns[0] : null);
@@ -78,8 +80,21 @@ class VideoParser {
 
     final videoId1 =
         traverseString(item, ["playNavigationEndpoint", "videoId"]);
+
+    // Safely extract first thumbnail URL (items are maps from traverseList)
+    String firstThumbUrl = '';
+    final thumbs = traverseList(item, ["thumbnails"]);
+    if (thumbs.isNotEmpty) {
+      final first = thumbs.first;
+      if (first is Map && first.containsKey('url')) {
+        firstThumbUrl = first['url']?.toString() ?? '';
+      } else if (first is String) {
+        firstThumbUrl = first;
+      }
+    }
+
     final videoId2 = RegExp(r"https:\/\/i\.ytimg\.com\/vi\/(.+)\/")
-        .firstMatch(traverseList(item, ["thumbnails"]).firstOrNull?.url ?? '')
+        .firstMatch(firstThumbUrl)
         ?.group(1);
 
     if ((videoId1?.isEmpty ?? true) && videoId2 == null) {
@@ -94,7 +109,19 @@ class VideoParser {
         name: traverseString(artist, ["text"]) ?? '',
         artistId: traverseString(artist, ["browseId"]),
       ),
-      duration: Parser.parseDuration(duration?.text),
+      duration: (() {
+        String? durText;
+        if (duration == null) {
+          durText = null;
+        } else if (duration is Map && duration.containsKey('text')) {
+          durText = duration['text']?.toString();
+        } else if (duration is String) {
+          durText = duration;
+        } else {
+          durText = duration.toString();
+        }
+        return Parser.parseDuration(durText);
+      })(),
       thumbnails: traverseList(item, ["thumbnails"])
           .map((item) => ThumbnailFull.fromMap(item))
           .toList(),

@@ -40,6 +40,11 @@ class Parser {
     return null;
   }
 
+  // Returns parsed duration in seconds, or 0 when parsing fails or input is null.
+  static int parseDurationOrZero(String? time) {
+    return parseDuration(time) ?? 0;
+  }
+
   static double parseNumber(String string) {
     if (string.endsWith("K") ||
         string.endsWith("M") ||
