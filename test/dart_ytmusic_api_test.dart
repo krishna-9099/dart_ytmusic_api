@@ -5,7 +5,42 @@ import 'package:dart_ytmusic_api/yt_music.dart';
 import 'package:dart_ytmusic_api/types.dart';
 
 void main() {
-  test('Album parser should parse album details correctly', () {});
+  test('Album parser should parse album details correctly', () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    // Search for albums and pick the first result to inspect
+    final searchResult = await ytmusic.searchAlbums('Abbey Road');
+
+    List<AlbumDetailed> albums;
+    if (searchResult is PaginatedResult<AlbumDetailed>) {
+      albums = searchResult.items;
+    } else {
+      albums = searchResult as List<AlbumDetailed>;
+    }
+
+    expect(albums, isNotEmpty,
+        reason: 'Expected at least one album from search');
+    final brief = albums.first;
+    print(
+        'Album found: ${brief.name} by ${brief.artist.name} (id: ${brief.albumId})');
+
+    // Fetch full album details and validate shape
+    final full = await ytmusic.getAlbum(brief.albumId);
+    expect(full, isA<AlbumFull>());
+    expect(full.name, isNotEmpty);
+    expect(full.artist.name, isNotEmpty);
+    expect(full.thumbnails, isNotEmpty);
+    expect(full.songs, isNotEmpty, reason: 'Album should contain songs');
+
+    // Inspect first few songs for fields the UI will need
+    for (final s in full.songs.take(5)) {
+      print('Song: ${s.name} by ${s.artist.name}');
+      expect(s.name, isNotEmpty);
+      expect(s.artist.name, isNotEmpty);
+      expect(s.thumbnails, isNotEmpty);
+    }
+  });
 
   test('getHomeSections should retrieve home sections', () async {
     final ytmusic = YTMusic();
@@ -449,7 +484,7 @@ void main() {
     // Test with a playlist ID that starts with RD (Radio/Recommended playlist)
     // RD playlist IDs now work with getPlaylist method thanks to VL prefix fix
     final playlist = await ytmusic
-        .getPlaylist('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
+        .getPlaylistWithRelated('RDCLAK5uy_nfs_t4FUu00E5ED6lveEBBX1VMYe1mFjk');
     expect(playlist, isNotNull);
     expect(playlist.name, isNotEmpty);
     expect(playlist.videoCount,
@@ -497,7 +532,7 @@ void main() {
 
     for (final playlistId in testPlaylistIds) {
       try {
-        final playlist = await ytmusic.getPlaylist(playlistId);
+        final playlist = await ytmusic.getPlaylistWithRelated(playlistId);
         expect(playlist, isNotNull);
         expect(playlist.name, isNotEmpty);
         print('✅ Playlist ID $playlistId works - Name: ${playlist.name}');
@@ -645,5 +680,57 @@ void main() {
         }
       }
     }
+  });
+
+  test("test for artist with id", () async {
+    final ytmusic = YTMusic();
+    await ytmusic.initialize();
+
+    final artist = await ytmusic.getArtist("UCVfSAUepe_FzP6ge6WexO5Q");
+
+    expect(artist, isA<ArtistFull>());
+    expect(artist.artistId, equals("UCVfSAUepe_FzP6ge6WexO5Q"));
+    expect(artist.name, isNotEmpty);
+    expect(artist.thumbnails, isNotEmpty);
+
+    print('\n🎤 Artist Details:');
+    print('Name: ${artist.name}');
+    print('Artist/Channel ID: ${artist.artistId}');
+    print('Is Channel ID (UC*): ${artist.artistId.startsWith('UC')}');
+    print('Thumbnails count: ${artist.thumbnails.length}');
+
+    // print('\n📀 Albums count: ${artist.albums.length}');
+    // print('🎵 Singles count: ${artist.singles.length}');
+    // print('🎨 Related Artists count: ${artist.relatedArtists.length}');
+    // print('📝 Featured On (playlists) count: ${artist.featuredOn.length}');
+
+    // Print related artists with their channel IDs
+
+    // Verify that featuredOn contains NO channel IDs (UC*)
+    print('\n✅ Verifying Featured On playlists:');
+    for (int i = 0; i < artist.featuredOn.length; i++) {
+      final playlist = artist.featuredOn[i];
+      print(
+          'Playlist $i: ${playlist.playlistId} - ${playlist.name} by ${playlist.artist.name}');
+
+      // Assert that playlistId is not empty and does NOT start with UC
+      expect(playlist.playlistId, isNotEmpty,
+          reason: 'Playlist ID should not be empty');
+      expect(playlist.playlistId.startsWith('UC'), isFalse,
+          reason:
+              'Featured On should not contain channel IDs (UC*), found: ${playlist.playlistId}');
+
+      // Verify it's a valid playlist ID format (VL*, PL*, RD*, OLAK*)
+      final isValidPlaylist = playlist.playlistId.startsWith('VL') ||
+          playlist.playlistId.startsWith('PL') ||
+          playlist.playlistId.startsWith('RD') ||
+          playlist.playlistId.startsWith('OLAK');
+      expect(isValidPlaylist, isTrue,
+          reason:
+              'Playlist ID should start with VL, PL, RD, or OLAK, found: ${playlist.playlistId}');
+    }
+
+    print(
+        '\n✅ All featuredOn items are valid playlists (no channel IDs found)');
   });
 }

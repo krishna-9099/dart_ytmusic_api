@@ -134,7 +134,12 @@ class YTMusic {
   /// Extracts a value from HTML using a regular expression.
   String _extractValue(String html, String regex) {
     final match = RegExp(regex).firstMatch(html);
-    return match != null ? match.group(1)! : '';
+    if (match == null) return '';
+    var value = match.group(1) ?? '';
+    if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
+      value = value.substring(1, value.length - 1);
+    }
+    return value;
   }
 
   /// Constructs and performs an API request to the specified endpoint with optional body and query parameters.
@@ -227,6 +232,12 @@ class YTMusic {
     };
 
     try {
+      // Debug logging: print outgoing request details to help diagnose 400 errors.
+      try {
+        // print('YTMusic: POST $uri');
+      } catch (e) {
+        // ignore logging errors
+      }
       final response = await _client.post(
         uri,
         headers: headers,

@@ -397,11 +397,17 @@ class ArtistFull implements SearchResult {
   @override
   final String type;
   final List<ThumbnailFull> thumbnails;
+  final String? topSongsTitle;
   final List<SongDetailed> topSongs;
+  final String? topAlbumsTitle;
   final List<AlbumDetailed> topAlbums;
+  final String? topSinglesTitle;
   final List<AlbumDetailed> topSingles;
+  final String? topVideosTitle;
   final List<VideoDetailed> topVideos;
+  final String? featuredOnTitle;
   final List<PlaylistDetailed> featuredOn;
+  final String? similarArtistsTitle;
   final List<ArtistDetailed> similarArtists;
 
   ArtistFull({
@@ -409,11 +415,17 @@ class ArtistFull implements SearchResult {
     required this.name,
     required this.type,
     required this.thumbnails,
+    this.topSongsTitle,
     required this.topSongs,
+    this.topAlbumsTitle,
     required this.topAlbums,
+    this.topSinglesTitle,
     required this.topSingles,
+    this.topVideosTitle,
     required this.topVideos,
+    this.featuredOnTitle,
     required this.featuredOn,
+    this.similarArtistsTitle,
     required this.similarArtists,
   });
 
@@ -425,21 +437,27 @@ class ArtistFull implements SearchResult {
         thumbnails = (map['thumbnails'] as List)
             .map((item) => ThumbnailFull.fromMap(item))
             .toList(),
+        topSongsTitle = map['topSongsTitle'] as String?,
         topSongs = (map['topSongs'] as List)
             .map((item) => SongDetailed.fromMap(item))
             .toList(),
+        topAlbumsTitle = map['topAlbumsTitle'] as String?,
         topAlbums = (map['topAlbums'] as List)
             .map((item) => AlbumDetailed.fromMap(item))
             .toList(),
+        topSinglesTitle = map['topSinglesTitle'] as String?,
         topSingles = (map['topSingles'] as List)
             .map((item) => AlbumDetailed.fromMap(item))
             .toList(),
+        topVideosTitle = map['topVideosTitle'] as String?,
         topVideos = (map['topVideos'] as List)
             .map((item) => VideoDetailed.fromMap(item))
             .toList(),
+        featuredOnTitle = map['featuredOnTitle'] as String?,
         featuredOn = (map['featuredOn'] as List)
             .map((item) => PlaylistDetailed.fromMap(item))
             .toList(),
+        similarArtistsTitle = map['similarArtistsTitle'] as String?,
         similarArtists = (map['similarArtists'] as List)
             .map((item) => ArtistDetailed.fromMap(item))
             .toList();

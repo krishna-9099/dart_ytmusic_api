@@ -9,7 +9,8 @@ void main() {
 
     // Use provided PL playlist ID
     final playlistId = 'PLfJC-Hett9qCYegKw3GNBzMC9FaUXLrmo';
-    final PlaylistFull playlist = await ytmusic.getPlaylist(playlistId);
+    final PlaylistFull playlist =
+        await ytmusic.getPlaylistWithRelated(playlistId);
 
     expect(playlist, isNotNull);
     expect(playlist.name, isNotEmpty);
