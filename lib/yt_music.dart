@@ -1,4 +1,5 @@
 import 'dart:convert';
+// import 'dart:io';
 
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dart_ytmusic_api/enums.dart';
@@ -1055,6 +1056,9 @@ class YTMusic {
   /// Retrieves detailed information about an artist given its artist ID.
   Future<ArtistFull> getArtist(String artistId) async {
     final data = await constructRequest("browse", body: {"browseId": artistId});
+
+    // Save raw response for debugging
+    // File('artist_raw_response.json').writeAsStringSync(jsonEncode(data));
 
     return ArtistParser.parse(data, artistId);
   }

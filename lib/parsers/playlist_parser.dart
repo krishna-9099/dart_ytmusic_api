@@ -284,20 +284,135 @@ class PlaylistParser {
 
   static PlaylistDetailed parseArtistFeaturedOn(
       dynamic item, ArtistBasic artistBasic) {
+    // Handle the musicTwoRowItemRenderer wrapper
+    final actualItem =
+        item is Map && item.containsKey('musicTwoRowItemRenderer')
+            ? item['musicTwoRowItemRenderer']
+            : item;
+
+    String? playlistId;
+    String? name;
+
+    if (actualItem is Map) {
+      final title = actualItem['title'];
+      if (title is Map) {
+        final runs = title['runs'];
+        if (runs is List && runs.isNotEmpty) {
+          final firstRun = runs[0];
+          if (firstRun is Map) {
+            name = firstRun['text'] as String?;
+            final navEndpoint = firstRun['navigationEndpoint'];
+            if (navEndpoint is Map) {
+              final browseEndpoint = navEndpoint['browseEndpoint'];
+              if (browseEndpoint is Map) {
+                playlistId = browseEndpoint['browseId'] as String?;
+              }
+            }
+          }
+        }
+      }
+
+      // If not found in title, check navigationEndpoint at item level
+      if (playlistId == null || playlistId!.isEmpty) {
+        final navEndpoint = actualItem['navigationEndpoint'];
+        if (navEndpoint is Map) {
+          final browseEndpoint = navEndpoint['browseEndpoint'];
+          if (browseEndpoint is Map) {
+            playlistId = browseEndpoint['browseId'] as String?;
+          }
+        }
+      }
+    }
+
+    // Fallback
+    playlistId ??= '';
+    name ??= '';
+
+    // Try to parse views from subtitle runs (e.g., "9.7M views")
+    String? views;
+    final subtitleList = traverseList(actualItem, ["subtitle", "runs"])
+        .map((r) => r is Map && r.containsKey('text') ? r['text'] : r)
+        .toList();
+    for (final element in subtitleList) {
+      final text = element?.toString() ?? '';
+      if (text.toLowerCase().contains('views')) {
+        views = text;
+        break;
+      }
+    }
+
+    // Extract shuffle and mix navigation endpoints from menu if present
+    Map<String, dynamic>? shuffleNav;
+    Map<String, dynamic>? mixNav;
+    final menuItems = actualItem is Map && actualItem['menu'] is Map
+        ? (actualItem['menu']['menuRenderer']['items'] as List?)
+        : null;
+    if (menuItems != null) {
+      for (final mi in menuItems) {
+        if (mi is Map && mi['menuNavigationItemRenderer'] is Map) {
+          final mr = mi['menuNavigationItemRenderer'] as Map;
+          final iconType = mr['icon'] is Map ? mr['icon']['iconType'] : null;
+          final nav = mr['navigationEndpoint'] as Map<String, dynamic>?;
+          if (iconType == 'MUSIC_SHUFFLE' && nav != null) {
+            shuffleNav = stripClickTrackingParams(nav) as Map<String, dynamic>?;
+          }
+          if (iconType == 'MIX' && nav != null) {
+            mixNav = stripClickTrackingParams(nav) as Map<String, dynamic>?;
+          }
+        }
+      }
+    }
+
     return PlaylistDetailed(
       type: "PLAYLIST",
-      playlistId:
-          traverseString(item, ["navigationEndpoint", "browseId"]) ?? '',
-      name: traverseString(item, ["runs", "text"]) ?? '',
+      playlistId: playlistId,
+      name: name,
       artist: artistBasic,
-      thumbnails: traverseList(item, ["thumbnails"])
+      thumbnails: (traverseList(actualItem, ["thumbnail", "thumbnails"]) ??
+              traverseList(actualItem, ["thumbnails"]))
           .map((item) => ThumbnailFull.fromMap(item))
           .toList(),
+      views: views,
+      shuffleNavigationEndpoint: shuffleNav,
+      mixNavigationEndpoint: mixNav,
     );
   }
 
   static PlaylistDetailed parseHomeSection(dynamic item) {
     final artist = traverse(item, ["subtitle", "runs"]);
+
+    // Try to extract views from subtitle runs
+    String? views;
+    final subtitleRuns = traverseList(item, ["subtitle", "runs"])
+        .map((r) => r is Map && r.containsKey('text') ? r['text'] : r)
+        .toList();
+    for (final element in subtitleRuns) {
+      final text = element?.toString() ?? '';
+      if (text.toLowerCase().contains('views')) {
+        views = text;
+        break;
+      }
+    }
+
+    // Extract shuffle/mix endpoints from menu
+    Map<String, dynamic>? shuffleNav;
+    Map<String, dynamic>? mixNav;
+    final menuItems = item is Map && item['menu'] is Map
+        ? (item['menu']['menuRenderer']['items'] as List?)
+        : null;
+    if (menuItems != null) {
+      for (final mi in menuItems) {
+        if (mi is Map && mi['menuNavigationItemRenderer'] is Map) {
+          final mr = mi['menuNavigationItemRenderer'] as Map;
+          final iconType = mr['icon'] is Map ? mr['icon']['iconType'] : null;
+          final nav = mr['navigationEndpoint'] as Map<String, dynamic>?;
+          if (iconType == 'MUSIC_SHUFFLE' && nav != null)
+            shuffleNav = stripClickTrackingParams(nav) as Map<String, dynamic>?;
+          if (iconType == 'MIX' && nav != null)
+            mixNav = stripClickTrackingParams(nav) as Map<String, dynamic>?;
+        }
+      }
+    }
 
     return PlaylistDetailed(
       type: "PLAYLIST",
@@ -311,6 +426,9 @@ class PlaylistParser {
       thumbnails: traverseList(item, ["thumbnails"])
           .map((item) => ThumbnailFull.fromMap(item))
           .toList(),
+      views: views,
+      shuffleNavigationEndpoint: shuffleNav,
+      mixNavigationEndpoint: mixNav,
     );
   }
 
@@ -344,12 +462,26 @@ class PlaylistParser {
         'thumbnails'
       ]).map((t) => ThumbnailFull.fromMap(t)).toList();
 
+      // Extract views if present in subtitle runs
+      String? views;
+      final subtitleRuns = traverseList(item, ['subtitle', 'runs'])
+          .map((r) => r is Map && r.containsKey('text') ? r['text'] : r)
+          .toList();
+      for (final element in subtitleRuns) {
+        final text = element?.toString() ?? '';
+        if (text.toLowerCase().contains('views')) {
+          views = text;
+          break;
+        }
+      }
+
       return PlaylistDetailed(
         type: 'PLAYLIST',
         playlistId: browseId ?? '',
         name: title ?? '',
         artist: ArtistBasic(name: artistName, artistId: artistId),
         thumbnails: thumbnails,
+        views: views,
       );
     }).toList();
   }

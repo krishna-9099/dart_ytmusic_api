@@ -23,3 +23,21 @@ bool isDuration(dynamic data) {
   final text = traverseString(data, ["text"]);
   return RegExp(r"(\d{1,2}:)?\d{1,2}:\d{1,2}").hasMatch(text ?? '');
 }
+
+/// Recursively strip any 'clickTrackingParams' keys from a Map or List
+/// Returns a deep-copied structure with those keys removed.
+dynamic stripClickTrackingParams(dynamic data) {
+  if (data == null) return null;
+  if (data is Map) {
+    final Map<String, dynamic> out = {};
+    data.forEach((key, value) {
+      if (key == 'clickTrackingParams') return; // skip
+      out[key] = stripClickTrackingParams(value);
+    });
+    return out;
+  }
+  if (data is List) {
+    return data.map((e) => stripClickTrackingParams(e)).toList();
+  }
+  return data;
+}

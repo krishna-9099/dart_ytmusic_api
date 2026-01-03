@@ -231,12 +231,14 @@ class ArtistDetailed implements SearchResult {
   @override
   final String type;
   final List<ThumbnailFull> thumbnails;
+  final String? subtitle;
 
   ArtistDetailed({
     required this.artistId,
     required this.name,
     required this.type,
     required this.thumbnails,
+    this.subtitle,
   });
 
   // Construtor nomeado para criar uma ArtistDetailed a partir de um mapa
@@ -246,7 +248,8 @@ class ArtistDetailed implements SearchResult {
         type = map['type'] as String,
         thumbnails = (map['thumbnails'] as List)
             .map((item) => ThumbnailFull.fromMap(item))
-            .toList();
+            .toList(),
+        subtitle = map['subtitle'] as String?;
 }
 
 class AlbumDetailed implements SearchResult {
@@ -289,6 +292,9 @@ class PlaylistDetailed implements SearchResult {
   final String name;
   final ArtistBasic artist;
   final List<ThumbnailFull> thumbnails;
+  final String? views;
+  final Map<String, dynamic>? shuffleNavigationEndpoint;
+  final Map<String, dynamic>? mixNavigationEndpoint;
 
   PlaylistDetailed({
     required this.type,
@@ -296,6 +302,9 @@ class PlaylistDetailed implements SearchResult {
     required this.name,
     required this.artist,
     required this.thumbnails,
+    this.views,
+    this.shuffleNavigationEndpoint,
+    this.mixNavigationEndpoint,
   });
 
   // Construtor nomeado para criar uma PlaylistDetailed a partir de um mapa
@@ -306,7 +315,12 @@ class PlaylistDetailed implements SearchResult {
         artist = ArtistBasic.fromMap(map['artist']),
         thumbnails = (map['thumbnails'] as List)
             .map((item) => ThumbnailFull.fromMap(item))
-            .toList();
+            .toList(),
+        views = map['views'] as String?,
+        shuffleNavigationEndpoint =
+            map['shuffleNavigationEndpoint'] as Map<String, dynamic>?,
+        mixNavigationEndpoint =
+            map['mixNavigationEndpoint'] as Map<String, dynamic>?;
 }
 
 class SongFull implements SearchResult {
@@ -407,8 +421,18 @@ class ArtistFull implements SearchResult {
   final List<VideoDetailed> topVideos;
   final String? featuredOnTitle;
   final List<PlaylistDetailed> featuredOn;
+  final String? playlistsByArtistTitle;
+  final List<PlaylistDetailed> playlistsByArtist;
   final String? similarArtistsTitle;
   final List<ArtistDetailed> similarArtists;
+  final String? about;
+  final String? subtitle;
+  final String? monthlyListenerCount;
+  final String? subscriberCount;
+  final Map<String, dynamic>? shuffleNavigationEndpoint;
+  final Map<String, dynamic>? mixNavigationEndpoint;
+  final Map<String, dynamic>? topSongsShowAllNavigationEndpoint;
+  final Map<String, dynamic>? sectionShowAllNavigationEndpoints;
 
   ArtistFull({
     required this.artistId,
@@ -425,42 +449,78 @@ class ArtistFull implements SearchResult {
     required this.topVideos,
     this.featuredOnTitle,
     required this.featuredOn,
+    this.playlistsByArtistTitle,
+    required this.playlistsByArtist,
     this.similarArtistsTitle,
     required this.similarArtists,
+    this.about,
+    this.subtitle,
+    this.monthlyListenerCount,
+    this.subscriberCount,
+    this.shuffleNavigationEndpoint,
+    this.mixNavigationEndpoint,
+    this.topSongsShowAllNavigationEndpoint,
+    this.sectionShowAllNavigationEndpoints,
   });
 
   // Construtor nomeado para criar uma ArtistFull a partir de um mapa
-  ArtistFull.fromMap(Map<String, dynamic> map)
-      : artistId = map['artistId'] as String,
-        name = map['name'] as String,
-        type = map['type'] as String,
-        thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
-            .toList(),
-        topSongsTitle = map['topSongsTitle'] as String?,
-        topSongs = (map['topSongs'] as List)
-            .map((item) => SongDetailed.fromMap(item))
-            .toList(),
-        topAlbumsTitle = map['topAlbumsTitle'] as String?,
-        topAlbums = (map['topAlbums'] as List)
-            .map((item) => AlbumDetailed.fromMap(item))
-            .toList(),
-        topSinglesTitle = map['topSinglesTitle'] as String?,
-        topSingles = (map['topSingles'] as List)
-            .map((item) => AlbumDetailed.fromMap(item))
-            .toList(),
-        topVideosTitle = map['topVideosTitle'] as String?,
-        topVideos = (map['topVideos'] as List)
-            .map((item) => VideoDetailed.fromMap(item))
-            .toList(),
-        featuredOnTitle = map['featuredOnTitle'] as String?,
-        featuredOn = (map['featuredOn'] as List)
-            .map((item) => PlaylistDetailed.fromMap(item))
-            .toList(),
-        similarArtistsTitle = map['similarArtistsTitle'] as String?,
-        similarArtists = (map['similarArtists'] as List)
-            .map((item) => ArtistDetailed.fromMap(item))
-            .toList();
+  factory ArtistFull.fromMap(Map<String, dynamic> map) {
+    final topSongsTitle = map['topSongsTitle'] as String?;
+    final topAlbumsTitle = map['topAlbumsTitle'] as String?;
+    final topSinglesTitle = map['topSinglesTitle'] as String?;
+    final topVideosTitle = map['topVideosTitle'] as String?;
+    final featuredOnTitle = map['featuredOnTitle'] as String?;
+    final playlistsByArtistTitle = map['playlistsByArtistTitle'] as String?;
+    final similarArtistsTitle = map['similarArtistsTitle'] as String?;
+    return ArtistFull(
+      artistId: map['artistId'] as String,
+      name: map['name'] as String,
+      type: map['type'] as String,
+      thumbnails: (map['thumbnails'] as List)
+          .map((item) => ThumbnailFull.fromMap(item))
+          .toList(),
+      topSongsTitle: topSongsTitle,
+      topSongs: (map['topSongs'] as List)
+          .map((item) => SongDetailed.fromMap(item))
+          .toList(),
+      topAlbumsTitle: topAlbumsTitle,
+      topAlbums: (map['topAlbums'] as List)
+          .map((item) => AlbumDetailed.fromMap(item))
+          .toList(),
+      topSinglesTitle: topSinglesTitle,
+      topSingles: (map['topSingles'] as List)
+          .map((item) => AlbumDetailed.fromMap(item))
+          .toList(),
+      topVideosTitle: topVideosTitle,
+      topVideos: (map['topVideos'] as List)
+          .map((item) => VideoDetailed.fromMap(item))
+          .toList(),
+      featuredOnTitle: featuredOnTitle,
+      featuredOn: (map['featuredOn'] as List)
+          .map((item) => PlaylistDetailed.fromMap(item))
+          .toList(),
+      playlistsByArtistTitle: playlistsByArtistTitle,
+      playlistsByArtist: (map['playlistsByArtist'] as List? ?? [])
+          .map((item) => PlaylistDetailed.fromMap(item))
+          .toList(),
+      similarArtistsTitle: similarArtistsTitle,
+      similarArtists: (map['similarArtists'] as List)
+          .map((item) => ArtistDetailed.fromMap(item))
+          .toList(),
+      about: map['about'] as String?,
+      subtitle: map['subtitle'] as String?,
+      monthlyListenerCount: map['monthlyListenerCount'] as String?,
+      subscriberCount: map['subscriberCount'] as String?,
+      shuffleNavigationEndpoint:
+          (map['shuffleNavigationEndpoint'] as Map<String, dynamic>?),
+      mixNavigationEndpoint:
+          (map['mixNavigationEndpoint'] as Map<String, dynamic>?),
+      topSongsShowAllNavigationEndpoint:
+          (map['topSongsShowAllNavigationEndpoint'] as Map<String, dynamic>?),
+      sectionShowAllNavigationEndpoints:
+          (map['sectionShowAllNavigationEndpoints'] as Map<String, dynamic>?),
+    );
+  }
 }
 
 class AlbumFull {
