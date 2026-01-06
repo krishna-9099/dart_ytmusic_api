@@ -1,10 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
 import 'package:test/test.dart';
 import 'package:dart_ytmusic_api/yt_music.dart';
 import 'package:dart_ytmusic_api/types.dart';
-import 'package:dart_ytmusic_api/utils/filters.dart';
 
 void main() {
   // test('Album parser should parse album details correctly', () async {
@@ -591,311 +587,416 @@ void main() {
   //   }
   // });
 
-  // test('getSong should retrieve song details including streaming formats',
-  //     () async {
-  //   final ytmusic = YTMusic();
-  //   await ytmusic.initialize();
-
-  //   final song = await ytmusic.getSong('6Mfe_tMuDfg');
-
-  //   expect(song, isA<SongFull>());
-  //   expect(song.videoId, equals('6Mfe_tMuDfg'));
-  //   expect(song.name, isNotEmpty);
-  //   expect(song.artist.name, isNotEmpty);
-  //   expect(song.duration, greaterThan(0));
-  //   expect(song.thumbnails, isNotEmpty);
-
-  //   print('✅ getSong retrieved song details:');
-  //   print('Video ID: ${song.videoId}');
-  //   print('Name: ${song.name}');
-  //   print('Artist: ${song.artist.name}');
-  //   print('Duration: ${song.duration} seconds');
-  //   print('Thumbnails count: ${song.thumbnails.length}');
-
-  //   // Check streaming formats
-  //   print('Formats count: ${song.formats.length}');
-  //   if (song.formats.isNotEmpty) {
-  //     print('First format sample:');
-  //     print(song.formats[0]);
-  //   }
-
-  //   print('Adaptive Formats count: ${song.adaptiveFormats.length}');
-  //   if (song.adaptiveFormats.isNotEmpty) {
-  //     print('First adaptive format sample:');
-  //     print(song.adaptiveFormats[0]);
-
-  //     // Look for audio-only formats
-  //     final audioFormats = song.adaptiveFormats.where((format) {
-  //       final mimeType = format['mimeType']?.toString() ?? '';
-  //       return mimeType.contains('audio/');
-  //     }).toList();
-
-  //     print('Audio-only formats found: ${audioFormats.length}');
-  //     for (int i = 0; i < audioFormats.length; i++) {
-  //       final format = audioFormats[i];
-  //       print('Audio Format ${i + 1}:');
-  //       print('  itag: ${format['itag']}');
-  //       print('  mimeType: ${format['mimeType']}');
-  //       print('  bitrate: ${format['bitrate']}');
-  //       print('  audioQuality: ${format['audioQuality']}');
-  //       print('  contentLength: ${format['contentLength']}');
-  //       print('  approxDurationMs: ${format['approxDurationMs']}');
-  //       print('');
-  //     }
-
-  //     if (audioFormats.isNotEmpty) {
-  //       print('Best audio format (highest bitrate):');
-  //       audioFormats.sort((a, b) {
-  //         final aBitrate = int.tryParse(a['bitrate']?.toString() ?? '0') ?? 0;
-  //         final bBitrate = int.tryParse(b['bitrate']?.toString() ?? '0') ?? 0;
-  //         return bBitrate.compareTo(aBitrate);
-  //       });
-  //       final bestAudio = audioFormats.first;
-  //       print(
-  //           'itag: ${bestAudio['itag']}, mimeType: ${bestAudio['mimeType']}, bitrate: ${bestAudio['bitrate']}');
-  //       print('Audio URL: ${bestAudio['url'] ?? bestAudio['signatureCipher']}');
-
-  //       // Print detailed information about the signatureCipher
-  //       final signatureCipher = bestAudio['signatureCipher'] as String?;
-  //       if (signatureCipher != null) {
-  //         print('\n🔍 SignatureCipher Analysis:');
-  //         print('Raw signatureCipher: $signatureCipher');
-
-  //         try {
-  //           // Parse the signatureCipher to extract components
-  //           final params = Uri.splitQueryString(signatureCipher);
-  //           print('Parsed parameters:');
-  //           params.forEach((key, value) {
-  //             if (key == 's') {
-  //               print('  $key: $value');
-  //             } else if (key == 'url') {
-  //               print('  $key: $value)');
-  //             } else {
-  //               print('  $key: $value');
-  //             }
-  //           });
-  //         } catch (e) {
-  //           print('❌ Error parsing signatureCipher: $e');
-  //         }
-  //       } else {
-  //         print('❌ No signatureCipher found');
-  //       }
-  //     }
-  //   }
-  // });
-
-  test("test for artist with id", () async {
+  test('getSong should retrieve song details including streaming formats',
+      () async {
     final ytmusic = YTMusic();
     await ytmusic.initialize();
 
-    final artist = await ytmusic.getArtist("UCzAn-hBNSTjX-QMnHASZFfA");
+    final song = await ytmusic.getSong('6Mfe_tMuDfg');
 
-    expect(artist, isA<ArtistFull>());
-    expect(artist.artistId, equals("UCzAn-hBNSTjX-QMnHASZFfA"));
-    expect(artist.name, isNotEmpty);
-    expect(artist.thumbnails, isNotEmpty);
+    expect(song, isA<SongFull>());
+    expect(song.videoId, equals('6Mfe_tMuDfg'));
+    expect(song.name, isNotEmpty);
+    expect(song.artist.name, isNotEmpty);
+    expect(song.duration, greaterThan(0));
+    expect(song.thumbnails, isNotEmpty);
 
-    print('\n🎤 Artist Details:');
-    print('Name: ${artist.name}');
-    print('Artist/Channel ID: ${artist.artistId}');
-    print('Is Channel ID (UC*): ${artist.artistId.startsWith('UC')}');
-    print('Thumbnails count: ${artist.thumbnails.length}');
+    print('✅ getSong retrieved song details:');
+    print('Video ID: ${song.videoId}');
+    print('Name: ${song.name}');
+    print('Artist: ${song.artist.name}');
+    print('Duration: ${song.duration} seconds');
+    print('Thumbnails count: ${song.thumbnails.length}');
 
-    print('\n✅ Verifying Featured On playlists:');
-    for (int i = 0; i < artist.featuredOn.length; i++) {
-      final playlist = artist.featuredOn[i];
-      print(
-          'Playlist $i: ${playlist.playlistId} - ${playlist.name} by ${playlist.artist.name}');
-
-      // Assert that playlistId is not empty and does NOT start with UC
-      expect(playlist.playlistId, isNotEmpty,
-          reason: 'Playlist ID should not be empty');
-      expect(playlist.playlistId.startsWith('UC'), isFalse,
-          reason:
-              'Featured On should not contain channel IDs (UC*), found: ${playlist.playlistId}');
-
-      // Verify it's a valid playlist ID format (VL*, PL*, RD*, OLAK*)
-      final isValidPlaylist = playlist.playlistId.startsWith('VL') ||
-          playlist.playlistId.startsWith('PL') ||
-          playlist.playlistId.startsWith('RD') ||
-          playlist.playlistId.startsWith('OLAK');
-      expect(isValidPlaylist, isTrue,
-          reason:
-              'Playlist ID should start with VL, PL, RD, or OLAK, found: ${playlist.playlistId}');
+    // Check streaming formats
+    print('Formats count: ${song.formats.length}');
+    if (song.formats.isNotEmpty) {
+      print('First format sample:');
+      print(song.formats[0]);
     }
 
-    print(
-        '\n✅ All featuredOn items are valid playlists (no channel IDs found)');
+    print('Adaptive Formats count: ${song.adaptiveFormats.length}');
+    if (song.adaptiveFormats.isNotEmpty) {
+      print('First adaptive format sample:');
+      print(song.adaptiveFormats[0]);
 
-    // Build headings locally (no longer stored on ArtistFull)
-    final headings = [
-      artist.topAlbumsTitle,
-      artist.topSinglesTitle,
-      artist.topVideosTitle,
-      artist.featuredOnTitle,
-      artist.playlistsByArtistTitle,
-      artist.similarArtistsTitle,
-      artist.topSongsTitle,
-    ].where((t) => t != null).cast<String>().toList();
+      // Look for audio-only formats
+      final audioFormats = song.adaptiveFormats.where((format) {
+        final mimeType = format['mimeType']?.toString() ?? '';
+        return mimeType.contains('audio/');
+      }).toList();
 
-    print('\n📋 Headings: ${headings.length}');
+      print('Audio-only formats found: ${audioFormats.length}');
+      for (int i = 0; i < audioFormats.length; i++) {
+        final format = audioFormats[i];
+        print('Audio Format ${i + 1}:');
+        print('  itag: ${format['itag']}');
+        print('  mimeType: ${format['mimeType']}');
+        print('  bitrate: ${format['bitrate']}');
+        print('  audioQuality: ${format['audioQuality']}');
+        print('  contentLength: ${format['contentLength']}');
+        print('  approxDurationMs: ${format['approxDurationMs']}');
+        print('');
+      }
 
-    // Map headings to their data
-    Map<String, dynamic> sectionData = {
-      if (artist.topSongsTitle != null) artist.topSongsTitle!: artist.topSongs,
-      if (artist.topAlbumsTitle != null)
-        artist.topAlbumsTitle!: artist.topAlbums,
-      if (artist.topSinglesTitle != null)
-        artist.topSinglesTitle!: artist.topSingles,
-      if (artist.topVideosTitle != null)
-        artist.topVideosTitle!: artist.topVideos,
-      if (artist.featuredOnTitle != null)
-        artist.featuredOnTitle!: artist.featuredOn,
-      if (artist.playlistsByArtistTitle != null)
-        artist.playlistsByArtistTitle!: artist.playlistsByArtist,
-      if (artist.similarArtistsTitle != null)
-        artist.similarArtistsTitle!: artist.similarArtists,
-    };
+      if (audioFormats.isNotEmpty) {
+        print('Best audio format (highest bitrate):');
+        audioFormats.sort((a, b) {
+          final aBitrate = int.tryParse(a['bitrate']?.toString() ?? '0') ?? 0;
+          final bBitrate = int.tryParse(b['bitrate']?.toString() ?? '0') ?? 0;
+          return bBitrate.compareTo(aBitrate);
+        });
+        final bestAudio = audioFormats.first;
+        print(
+            'itag: ${bestAudio['itag']}, mimeType: ${bestAudio['mimeType']}, bitrate: ${bestAudio['bitrate']}');
+        print('Audio URL: ${bestAudio['url'] ?? bestAudio['signatureCipher']}');
 
-    print('\n📋 Headings with Data:');
-    headings.forEach((heading) {
-      final data = sectionData[heading];
-      if (data != null) {
-        print('  - $heading: ${data.length} items');
-        if (data is List && data.isNotEmpty) {
-          // Print first 3 items as examples
-          for (int i = 0; i < data.length && i < 3; i++) {
-            final item = data[i];
-            if (item is SongDetailed) {
-              print(
-                  '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.videoId})');
-            } else if (item is AlbumDetailed) {
-              print(
-                  '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.albumId})');
-            } else if (item is VideoDetailed) {
-              print(
-                  '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.videoId})');
-            } else if (item is PlaylistDetailed) {
-              print(
-                  '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.playlistId})');
-            } else if (item is ArtistDetailed) {
-              print('    ${i + 1}. ${item.name} (${item.artistId})');
-            }
+        // Print detailed information about the signatureCipher
+        final signatureCipher = bestAudio['signatureCipher'] as String?;
+        if (signatureCipher != null) {
+          print('\n🔍 SignatureCipher Analysis:');
+          print('Raw signatureCipher: $signatureCipher');
+
+          try {
+            // Parse the signatureCipher to extract components
+            final params = Uri.splitQueryString(signatureCipher);
+            print('Parsed parameters:');
+            params.forEach((key, value) {
+              if (key == 's') {
+                print('  $key: $value');
+              } else if (key == 'url') {
+                print('  $key: $value)');
+              } else {
+                print('  $key: $value');
+              }
+            });
+          } catch (e) {
+            print('❌ Error parsing signatureCipher: $e');
           }
+        } else {
+          print('❌ No signatureCipher found');
         }
-      } else {
-        print('  - $heading: No data mapped');
       }
-    });
-
-    // Collect detailed data for JSON output
-    Map<String, dynamic> detailedOutput = {
-      "artistDetails": {
-        "name": artist.name,
-        "artistId": artist.artistId,
-        "isChannelId": artist.artistId.startsWith('UC'),
-        "thumbnailsCount": artist.thumbnails.length,
-        "thumbnails": artist.thumbnails
-            .map((t) => {"url": t.url, "width": t.width, "height": t.height})
-            .toList(),
-        "subtitle": artist.subtitle,
-        "monthlyListenerCount": artist.monthlyListenerCount,
-        "shuffleNavigationEndpoint": artist.shuffleNavigationEndpoint,
-        "mixNavigationEndpoint": artist.mixNavigationEndpoint,
-        "topSongsShowAllNavigationEndpoint":
-            artist.topSongsShowAllNavigationEndpoint,
-        "sectionShowAllNavigationEndpoints":
-            artist.sectionShowAllNavigationEndpoints,
-        "subscriberCount": artist.subscriberCount
-      },
-      "headings": headings,
-      "sections": {},
-      "about": artist.about
-    };
-
-    // Populate sections
-    headings.forEach((heading) {
-      dynamic data;
-      final hl = heading.toLowerCase();
-
-      // Map data based on heading content
-      if (hl.contains('album') && !hl.contains('single')) {
-        data = sectionData[artist.topAlbumsTitle];
-      } else if (hl.contains('single') || hl.contains('ep')) {
-        data = sectionData[artist.topSinglesTitle];
-      } else if (hl.contains('video')) {
-        data = sectionData[artist.topVideosTitle];
-      } else if (hl.contains('feature') ||
-          hl.contains('appear') ||
-          hl.contains('live')) {
-        data = artist.featuredOn;
-      } else if (hl.contains('playlist') && hl.contains('by')) {
-        data = sectionData[artist.playlistsByArtistTitle];
-      } else if (hl.contains('similar') ||
-          hl.contains('fan') ||
-          hl.contains('like')) {
-        data = sectionData[artist.similarArtistsTitle];
-      } else if (hl.contains('top') && hl.contains('song')) {
-        data = sectionData[artist.topSongsTitle];
-      }
-
-      if (data != null && data is List) {
-        detailedOutput["sections"][heading] = data.map((item) {
-          if (item is SongDetailed) {
-            return {
-              "type": "song",
-              "name": item.name,
-              "artist": item.artist.name,
-              "videoId": item.videoId,
-              "album": item.album?.name,
-              "duration": item.duration
-            };
-          } else if (item is AlbumDetailed) {
-            return {
-              "type": "album",
-              "name": item.name,
-              "artist": item.artist.name,
-              "albumId": item.albumId,
-              "year": item.year
-            };
-          } else if (item is VideoDetailed) {
-            return {
-              "type": "video",
-              "name": item.name,
-              "artist": item.artist.name,
-              "videoId": item.videoId,
-              "duration": item.duration
-            };
-          } else if (item is PlaylistDetailed) {
-            return {
-              "type": "playlist",
-              "name": item.name,
-              "artist": item.artist.name,
-              "playlistId": item.playlistId,
-              "views": item.views,
-              "shuffleNavigationEndpoint": item.shuffleNavigationEndpoint,
-              "mixNavigationEndpoint": item.mixNavigationEndpoint
-            };
-          } else if (item is ArtistDetailed) {
-            return {
-              "type": "artist",
-              "name": item.name,
-              "artistId": item.artistId,
-              "subtitle": item.subtitle
-            };
-          }
-          return {};
-        }).toList();
-      } else {
-        detailedOutput["sections"][heading] = [];
-      }
-    });
-
-    // Sanitize output to remove any 'clickTrackingParams' remnants
-    final cleaned = stripClickTrackingParams(detailedOutput);
-
-    // Save to JSON file
-    File('${artist.name}.json').writeAsStringSync(jsonEncode(cleaned));
-    print('Detailed output saved to ${artist.name}.json');
+    }
   });
+
+//   test("test for artist with id", () async {
+//     final ytmusic = YTMusic();
+//     await ytmusic.initialize();
+
+//     final artist = await ytmusic.getArtist("UCzAn-hBNSTjX-QMnHASZFfA");
+
+//     expect(artist, isA<ArtistFull>());
+//     expect(artist.artistId, equals("UCzAn-hBNSTjX-QMnHASZFfA"));
+//     expect(artist.name, isNotEmpty);
+//     expect(artist.thumbnails, isNotEmpty);
+
+//     print('\n🎤 Artist Details:');
+//     print('Name: ${artist.name}');
+//     print('Artist/Channel ID: ${artist.artistId}');
+//     print('Is Channel ID (UC*): ${artist.artistId.startsWith('UC')}');
+//     print('Thumbnails count: ${artist.thumbnails.length}');
+
+//     print('\n✅ Verifying Featured On playlists:');
+//     for (int i = 0; i < artist.featuredOn.length; i++) {
+//       final playlist = artist.featuredOn[i];
+//       print(
+//           'Playlist $i: ${playlist.playlistId} - ${playlist.name} by ${playlist.artist.name}');
+
+//       // Assert that playlistId is not empty and does NOT start with UC
+//       expect(playlist.playlistId, isNotEmpty,
+//           reason: 'Playlist ID should not be empty');
+//       expect(playlist.playlistId.startsWith('UC'), isFalse,
+//           reason:
+//               'Featured On should not contain channel IDs (UC*), found: ${playlist.playlistId}');
+
+//       // Verify it's a valid playlist ID format (VL*, PL*, RD*, OLAK*)
+//       final isValidPlaylist = playlist.playlistId.startsWith('VL') ||
+//           playlist.playlistId.startsWith('PL') ||
+//           playlist.playlistId.startsWith('RD') ||
+//           playlist.playlistId.startsWith('OLAK');
+//       expect(isValidPlaylist, isTrue,
+//           reason:
+//               'Playlist ID should start with VL, PL, RD, or OLAK, found: ${playlist.playlistId}');
+//     }
+
+//     print(
+//         '\n✅ All featuredOn items are valid playlists (no channel IDs found)');
+
+//     // Build headings locally (no longer stored on ArtistFull)
+//     final headings = [
+//       artist.topAlbumsTitle,
+//       artist.topSinglesTitle,
+//       artist.topVideosTitle,
+//       artist.featuredOnTitle,
+//       artist.playlistsByArtistTitle,
+//       artist.similarArtistsTitle,
+//       artist.topSongsTitle,
+//     ].where((t) => t != null).cast<String>().toList();
+
+//     print('\n📋 Headings: ${headings.length}');
+
+//     // Map headings to their data
+//     Map<String, dynamic> sectionData = {
+//       if (artist.topSongsTitle != null) artist.topSongsTitle!: artist.topSongs,
+//       if (artist.topAlbumsTitle != null)
+//         artist.topAlbumsTitle!: artist.topAlbums,
+//       if (artist.topSinglesTitle != null)
+//         artist.topSinglesTitle!: artist.topSingles,
+//       if (artist.topVideosTitle != null)
+//         artist.topVideosTitle!: artist.topVideos,
+//       if (artist.featuredOnTitle != null)
+//         artist.featuredOnTitle!: artist.featuredOn,
+//       if (artist.playlistsByArtistTitle != null)
+//         artist.playlistsByArtistTitle!: artist.playlistsByArtist,
+//       if (artist.similarArtistsTitle != null)
+//         artist.similarArtistsTitle!: artist.similarArtists,
+//     };
+
+//     print('\n📋 Headings with Data:');
+//     headings.forEach((heading) {
+//       final data = sectionData[heading];
+//       if (data != null) {
+//         print('  - $heading: ${data.length} items');
+//         if (data is List && data.isNotEmpty) {
+//           // Print first 3 items as examples
+//           for (int i = 0; i < data.length && i < 3; i++) {
+//             final item = data[i];
+//             if (item is SongDetailed) {
+//               print(
+//                   '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.videoId})');
+//             } else if (item is AlbumDetailed) {
+//               print(
+//                   '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.albumId})');
+//             } else if (item is VideoDetailed) {
+//               print(
+//                   '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.videoId})');
+//             } else if (item is PlaylistDetailed) {
+//               print(
+//                   '    ${i + 1}. ${item.name} by ${item.artist.name} (${item.playlistId})');
+//             } else if (item is ArtistDetailed) {
+//               print('    ${i + 1}. ${item.name} (${item.artistId})');
+//             }
+//           }
+//         }
+//       } else {
+//         print('  - $heading: No data mapped');
+//       }
+//     });
+
+//     // Collect detailed data for JSON output
+//     Map<String, dynamic> detailedOutput = {
+//       "artistDetails": {
+//         "name": artist.name,
+//         "artistId": artist.artistId,
+//         "isChannelId": artist.artistId.startsWith('UC'),
+//         "thumbnailsCount": artist.thumbnails.length,
+//         "thumbnails": artist.thumbnails
+//             .map((t) => {"url": t.url, "width": t.width, "height": t.height})
+//             .toList(),
+//         "subtitle": artist.subtitle,
+//         "monthlyListenerCount": artist.monthlyListenerCount,
+//         "shuffleNavigationEndpoint": artist.shuffleNavigationEndpoint,
+//         "mixNavigationEndpoint": artist.mixNavigationEndpoint,
+//         "topSongsShowAllNavigationEndpoint":
+//             artist.topSongsShowAllNavigationEndpoint,
+//         "sectionShowAllNavigationEndpoints":
+//             artist.sectionShowAllNavigationEndpoints,
+//         "subscriberCount": artist.subscriberCount
+//       },
+//       "headings": headings,
+//       "sections": {},
+//       "about": artist.about
+//     };
+
+//     // Populate sections
+//     headings.forEach((heading) {
+//       dynamic data;
+//       final hl = heading.toLowerCase();
+
+//       // Map data based on heading content
+//       if (hl.contains('album') && !hl.contains('single')) {
+//         data = sectionData[artist.topAlbumsTitle];
+//       } else if (hl.contains('single') || hl.contains('ep')) {
+//         data = sectionData[artist.topSinglesTitle];
+//       } else if (hl.contains('video')) {
+//         data = sectionData[artist.topVideosTitle];
+//       } else if (hl.contains('feature') ||
+//           hl.contains('appear') ||
+//           hl.contains('live')) {
+//         data = artist.featuredOn;
+//       } else if (hl.contains('playlist') && hl.contains('by')) {
+//         data = sectionData[artist.playlistsByArtistTitle];
+//       } else if (hl.contains('similar') ||
+//           hl.contains('fan') ||
+//           hl.contains('like')) {
+//         data = sectionData[artist.similarArtistsTitle];
+//       } else if (hl.contains('top') && hl.contains('song')) {
+//         data = sectionData[artist.topSongsTitle];
+//       }
+
+//       if (data != null && data is List) {
+//         detailedOutput["sections"][heading] = data.map((item) {
+//           if (item is SongDetailed) {
+//             return {
+//               "type": "song",
+//               "name": item.name,
+//               "artist": item.artist.name,
+//               "videoId": item.videoId,
+//               "album": item.album?.name,
+//               "duration": item.duration
+//             };
+//           } else if (item is AlbumDetailed) {
+//             return {
+//               "type": "album",
+//               "name": item.name,
+//               "artist": item.artist.name,
+//               "albumId": item.albumId,
+//               "year": item.year
+//             };
+//           } else if (item is VideoDetailed) {
+//             return {
+//               "type": "video",
+//               "name": item.name,
+//               "artist": item.artist.name,
+//               "videoId": item.videoId,
+//               "duration": item.duration
+//             };
+//           } else if (item is PlaylistDetailed) {
+//             return {
+//               "type": "playlist",
+//               "name": item.name,
+//               "artist": item.artist.name,
+//               "playlistId": item.playlistId,
+//               "views": item.views,
+//               "shuffleNavigationEndpoint": item.shuffleNavigationEndpoint,
+//               "mixNavigationEndpoint": item.mixNavigationEndpoint
+//             };
+//           } else if (item is ArtistDetailed) {
+//             return {
+//               "type": "artist",
+//               "name": item.name,
+//               "artistId": item.artistId,
+//               "subtitle": item.subtitle
+//             };
+//           }
+//           return {};
+//         }).toList();
+//       } else {
+//         detailedOutput["sections"][heading] = [];
+//       }
+//     });
+
+//     // Sanitize output to remove any 'clickTrackingParams' remnants
+//     final cleaned = stripClickTrackingParams(detailedOutput);
+
+//     // Save to JSON file
+//     File('${artist.name}.json').writeAsStringSync(jsonEncode(cleaned));
+//     print('Detailed output saved to ${artist.name}.json');
+//   });
+
+//   test('getHomeSections should retrieve home sections and inspect data types',
+//       () async {
+//     final ytmusic = YTMusic();
+//     await ytmusic.initialize();
+
+//     final sections = await ytmusic.getHomeSections();
+
+//     expect(sections, isNotEmpty, reason: 'Home sections should not be empty');
+//     print('\n🏠 Home Sections Retrieved: ${sections.length} sections');
+
+//     for (int i = 0; i < sections.length; i++) {
+//       final section = sections[i];
+//       print('\n📂 Section ${i + 1}: "${section.title}"');
+//       expect(section.contents, isList,
+//           reason: 'Section contents should be a list');
+//       print('   Contents count: ${section.contents.length}');
+
+//       // Analyze types in contents
+//       final typeCounts = <String, int>{};
+//       for (final content in section.contents) {
+//         final type = content.runtimeType.toString();
+//         typeCounts[type] = (typeCounts[type] ?? 0) + 1;
+//       }
+
+//       print('   Content types:');
+//       typeCounts.forEach((type, count) {
+//         print('     - $type: $count items');
+//       });
+
+//       // Print first few contents for inspection with their types
+//       print('   First few contents:');
+//       for (int j = 0; j < section.contents.length && j < 3; j++) {
+//         final content = section.contents[j];
+//         print(
+//             '     ${j + 1}. [${content.runtimeType}] ${content.toString().split('(').first}');
+//         // Print some key properties if available
+//         if (content is SongDetailed) {
+//           print(
+//               '        Name: ${content.name}, Artist: ${content.artist.name}, VideoId: ${content.videoId}');
+//         } else if (content is AlbumDetailed) {
+//           print(
+//               '        Name: ${content.name}, Artist: ${content.artist.name}, AlbumId: ${content.albumId}');
+//         } else if (content is PlaylistDetailed) {
+//           print(
+//               '        Name: ${content.name}, Artist: ${content.artist.name}, PlaylistId: ${content.playlistId}');
+//         } else if (content is VideoDetailed) {
+//           print(
+//               '        Name: ${content.name}, Artist: ${content.artist.name}, VideoId: ${content.videoId}');
+//         } else if (content is ArtistDetailed) {
+//           print('        Name: ${content.name}, ArtistId: ${content.artistId}');
+//         }
+//       }
+
+//       // Special detailed printing for "Live performances" section
+//       if (section.title == "Live performances") {
+//         print('   📹 Detailed Live Performances:');
+//         for (int j = 0; j < section.contents.length; j++) {
+//           final content = section.contents[j];
+//           if (content is PlaylistDetailed) {
+//             print('     ${j + 1}. Full Details:');
+//             print('        Name: ${content.name}');
+//             print('        Artist: ${content.artist.name}');
+//             print('        PlaylistId: ${content.playlistId}');
+//             print('        Type: ${content.type}');
+//             print('        Views: ${content.views ?? "N/A"}');
+//             print('        Thumbnails: ${content.thumbnails.length} available');
+//             if (content.thumbnails.isNotEmpty) {
+//               print('        Thumbnail URL: ${content.thumbnails.first.url}');
+//             }
+//             print(
+//                 '        Shuffle Endpoint: ${content.shuffleNavigationEndpoint != null ? "Available" : "N/A"}');
+//             print(
+//                 '        Mix Endpoint: ${content.mixNavigationEndpoint != null ? "Available" : "N/A"}');
+//             print('');
+//           }
+//         }
+//       }
+
+//       // Special detailed printing for "Music videos for you" section
+//       if (section.title == "Music videos for you") {
+//         print('   🎵 Detailed Music Videos:');
+//         for (int j = 0; j < section.contents.length; j++) {
+//           final content = section.contents[j];
+//           if (content is PlaylistDetailed) {
+//             print('     ${j + 1}. Full Details:');
+//             print('        Name: ${content.name}');
+//             print('        Artist: ${content.artist.name}');
+//             print('        PlaylistId: ${content.playlistId}');
+//             print('        Type: ${content.type}');
+//             print('        Views: ${content.views ?? "N/A"}');
+//             print('        Thumbnails: ${content.thumbnails.length} available');
+//             if (content.thumbnails.isNotEmpty) {
+//               print('        Thumbnail URL: ${content.thumbnails.first.url}');
+//             }
+//             print(
+//                 '        Shuffle Endpoint: ${content.shuffleNavigationEndpoint != null ? "Available" : "N/A"}');
+//             print(
+//                 '        Mix Endpoint: ${content.mixNavigationEndpoint != null ? "Available" : "N/A"}');
+//             print('');
+//           }
+//         }
+//       }
+//     }
+//   });
 }

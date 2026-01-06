@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
 import 'package:dart_ytmusic_api/parsers/artist_parser.dart';
-import 'package:dart_ytmusic_api/types.dart';
 
 void main() {
   test('ArtistParser parses section titles from renderer data', () {

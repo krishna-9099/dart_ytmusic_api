@@ -4,7 +4,6 @@ import 'package:dart_ytmusic_api/parsers/song_parser.dart';
 import 'package:dart_ytmusic_api/parsers/video_parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
-import 'package:dart_ytmusic_api/utils/filters.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class ArtistParser {
