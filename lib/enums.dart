@@ -3,7 +3,7 @@ enum PageType {
   musicPageTypePlaylist,
   musicVideoTypeOmv;
 
-  static string(PageType pageType) {
+  static String string(PageType pageType) {
     switch (pageType) {
       case PageType.musicPageTypeAlbum:
         return 'MUSIC_PAGE_TYPE_ALBUM';

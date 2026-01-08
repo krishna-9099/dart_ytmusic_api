@@ -228,8 +228,7 @@ class PlaylistParser {
                     RegExp(r'(\d+(?:,\d+)*)\s+views?').firstMatch(item);
                 if (match != null) {
                   return int.tryParse(
-                          match.group(1)?.replaceAll(',', '') ?? '0') ??
-                      null;
+                          match.group(1)?.replaceAll(',', '') ?? '0');
                 }
               }
             }
@@ -313,7 +312,7 @@ class PlaylistParser {
       }
 
       // If not found in title, check navigationEndpoint at item level
-      if (playlistId == null || playlistId!.isEmpty) {
+      if (playlistId == null || playlistId.isEmpty) {
         final navEndpoint = actualItem['navigationEndpoint'];
         if (navEndpoint is Map) {
           final browseEndpoint = navEndpoint['browseEndpoint'];
@@ -406,10 +405,12 @@ class PlaylistParser {
           final mr = mi['menuNavigationItemRenderer'] as Map;
           final iconType = mr['icon'] is Map ? mr['icon']['iconType'] : null;
           final nav = mr['navigationEndpoint'] as Map<String, dynamic>?;
-          if (iconType == 'MUSIC_SHUFFLE' && nav != null)
+          if (iconType == 'MUSIC_SHUFFLE' && nav != null) {
             shuffleNav = stripClickTrackingParams(nav) as Map<String, dynamic>?;
-          if (iconType == 'MIX' && nav != null)
+          }
+          if (iconType == 'MIX' && nav != null) {
             mixNav = stripClickTrackingParams(nav) as Map<String, dynamic>?;
+          }
         }
       }
     }

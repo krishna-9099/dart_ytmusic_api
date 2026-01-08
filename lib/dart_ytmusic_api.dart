@@ -1,4 +1,4 @@
-library dart_ytmusic_api;
+library;
 
 export './yt_music.dart';
 export './enums.dart';

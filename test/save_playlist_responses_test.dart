@@ -37,8 +37,9 @@ void main() {
         ['musicPlaylistShelfRenderer', 'musicResponsiveListItemRenderer']));
 
     dynamic continuation = traverse(raw, ['continuation']);
-    if (continuation is List)
+    if (continuation is List) {
       continuation = continuation.isNotEmpty ? continuation[0] : null;
+    }
 
     while (continuation != null && continuation is! List) {
       final page = await ytmusic
