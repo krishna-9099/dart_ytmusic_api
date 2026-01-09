@@ -328,7 +328,6 @@ class YTMusic {
 
       final parsedResults = results
           .map(SearchParser.parse)
-          .where((e) => e != null)
           .cast<SearchResult>()
           .toList();
 
@@ -344,7 +343,6 @@ class YTMusic {
       }
       final parsedResults = results
           .map(SearchParser.parse)
-          .where((e) => e != null)
           .cast<SearchResult>()
           .toList();
 
@@ -356,7 +354,6 @@ class YTMusic {
         final nextResults =
             traverseList(nextData, ["musicResponsiveListItemRenderer"])
                 .map(SearchParser.parse)
-                .where((e) => e != null)
                 .cast<SearchResult>()
                 .toList();
         parsedResults.addAll(nextResults);
@@ -421,7 +418,6 @@ class YTMusic {
 
       final parsedResults = results
           .map(SongParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<SongDetailed>()
           .toList();
 
@@ -454,7 +450,6 @@ class YTMusic {
 
       return results
           .map(SongParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<SongDetailed>()
           .toList();
     }
@@ -508,7 +503,6 @@ class YTMusic {
 
       final parsedResults = results
           .map(VideoParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<VideoDetailed>()
           .toList();
 
@@ -541,7 +535,6 @@ class YTMusic {
 
       return results
           .map(VideoParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<VideoDetailed>()
           .toList();
     }
@@ -595,7 +588,6 @@ class YTMusic {
 
       final parsedResults = results
           .map(ArtistParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<ArtistDetailed>()
           .toList();
 
@@ -628,7 +620,6 @@ class YTMusic {
 
       return results
           .map(ArtistParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<ArtistDetailed>()
           .toList();
     }
@@ -682,7 +673,6 @@ class YTMusic {
 
       final parsedResults = results
           .map(AlbumParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<AlbumDetailed>()
           .toList();
 
@@ -715,7 +705,6 @@ class YTMusic {
 
       return results
           .map(AlbumParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<AlbumDetailed>()
           .toList();
     }
@@ -769,7 +758,6 @@ class YTMusic {
 
       final parsedResults = results
           .map(PlaylistParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<PlaylistDetailed>()
           .toList();
 
@@ -802,7 +790,6 @@ class YTMusic {
 
       return results
           .map(PlaylistParser.parseSearchResult)
-          .where((e) => e != null)
           .cast<PlaylistDetailed>()
           .toList();
     }

@@ -367,8 +367,7 @@ class PlaylistParser {
       playlistId: playlistId,
       name: name,
       artist: artistBasic,
-      thumbnails: (traverseList(actualItem, ["thumbnail", "thumbnails"]) ??
-              traverseList(actualItem, ["thumbnails"]))
+      thumbnails: traverseList(actualItem, ["thumbnail", "thumbnails"]) 
           .map((item) => ThumbnailFull.fromMap(item))
           .toList(),
       views: views,
