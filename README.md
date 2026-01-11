@@ -118,6 +118,7 @@ The following methods are available in the `YTMusic` class:
 - `getLyrics(videoId: String)`: Retrieves the lyrics of a song given its video ID.
 - `getTimedLyrics(String videoId)`: Retrieves the timed lyrics (lyrics synchronized with audio playback times) for a song given its video ID.
 - `getUpNexts(String videoId, {bool paginated = false, String? continuationToken})`: Retrieves a list of suggested up next songs for a given video ID.
+- `getRelated(String videoId)`: Retrieves a canonical list of items from the **Related** tab on the watch page for a given video ID. Returns `List<RelatedItem>` where `RelatedItem` contains `{ kind, id, title, subtitle, thumbnails, raw }`.
 - `getArtist(artistId: String)`: Retrieves detailed information about an artist given its artist ID.
 - `getAlbum(albumId: String)`: Retrieves detailed information about an album given its album ID.
 - `getPlaylist(playlistId: String)`: Retrieves detailed information about a playlist given its playlist ID.
@@ -227,6 +228,30 @@ Future<void> loadUpNextSongs(String videoId) async {
   }
 }
 ```
+
+### Related Tab (getRelated)
+
+You can retrieve the items shown in the **Related** tab on a video's watch page using `getRelated(videoId)`. The method finds the Related tab via the `next` endpoint, fetches the `browse` page, and parses it into a canonical `RelatedItem` list.
+
+```dart
+// Fetch and print related items for a video
+final ytmusic = YTMusic();
+await ytmusic.initialize();
+final related = await ytmusic.getRelated('Mc1MZkvMvCk');
+for (final r in related) {
+  print('${r.kind}: ${r.title} (${r.id}) - ${r.subtitle}');
+}
+```
+
+`RelatedItem` fields:
+- `kind` — type of item (e.g., `song`, `playlist`, `album`, `artist`).
+- `id` — `videoId` or `browseId` / `playlistId` depending on the item.
+- `title` — displayed title text.
+- `subtitle` — subtitle (artist or other info).
+- `thumbnails` — list of `ThumbnailFull` objects.
+- `raw` — the original renderer map (for advanced parsing).
+
+A saved sample response used for tests and development can be found at `example_related_browse.json` in the project root.
 
 ## Known Issues
 
