@@ -273,6 +273,10 @@ if (choice.requiresDecipher) {
 Notes:
 - The package includes a non-deciphering URL resolver: `FormatHelper.resolveFormatUrl(format)` which will parse `url` or `signatureCipher` fields and indicate whether deciphering is required. The library does not perform automatic deciphering by default (to avoid maintenance and legal concerns), but you can implement or plug in a decipherer if desired.
 
+  **Note:** Decipher registration and dispatcher logic now live in `lib/decipher/decipherer.dart`. Use `FormatHelper.registerDecipherer(...)` for backwards compatibility or `Decipherer.register(...)` directly to register your decipher function.
+
+  **Prototype JS extractor:** A small prototype extractor exists at `lib/decipher/player_js_extractor.dart`. Use `PlayerJsExtractor.buildDecipherFromPlayerJs(js)` to produce an async decipher function from the player JS text (supports common ops: swap, splice, slice, reverse). You can also call `PlayerJsExtractor.registerDecipherIfFound(js)` to automatically register the produced decipher function with `Decipherer` when a transform is detected.
+
 ## Known Issues
 
 - **`getPlaylistVideos` RD support improved.** `getPlaylistVideos()` now supports many RD playlist ID formats including `RDCL...` and `RDAMVM...` (the latter maps to the Up Next radio list). Some RD variants (non-standard internal formats) may still fail; in those cases the method will surface the error and clients should fall back to other means (e.g., `getPlaylistWithRelated()` or `getUpNexts()`).

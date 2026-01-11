@@ -1,0 +1,1 @@
+var Abc={r:function(a){a.reverse();},s:function(a,b){a.splice(0,b);},w:function(a,b){var c=a[0];a[0]=a[b%a.length];a[b]=c;}};function sig(a){a=a.split("");Abc.w(a,2);Abc.s(a,3);Abc.r(a);return a.join("");}

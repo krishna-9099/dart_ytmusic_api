@@ -1,0 +1,1 @@
+function dec(sig){sig=sig.split(""); sig.splice(0,3); sig.reverse(); return sig.join("");}

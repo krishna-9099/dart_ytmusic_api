@@ -817,7 +817,10 @@ class YTMusic {
     bool paginated = false,
     String? continuationToken,
   }) async {
-    if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
+    // Relaxed validation: support common YouTube video id variants (commonly 11 chars,
+    // but some internal playlist-derived tokens can vary). If the id looks totally
+    // invalid, the downstream request will fail and we propagate that error.
+    if (!RegExp(r"^[a-zA-Z0-9-_]{8,20}$").hasMatch(videoId)) {
       throw Exception("Invalid videoId");
     }
 
@@ -993,7 +996,7 @@ class YTMusic {
       {bool preferOpus = true, int? maxBitrate}) async {
     final song = await getSong(videoId);
     final all = [...song.formats, ...song.adaptiveFormats];
-    return FormatHelper.selectBestAudioFormat(all,
+    return await FormatHelper.selectBestAudioFormat(all,
         preferOpus: preferOpus, maxBitrate: maxBitrate);
   }
 
@@ -1273,36 +1276,69 @@ class YTMusic {
   }
 
   /// Retrieves a list of videos from a playlist given its playlist ID.
+  // Helper: attempt to extract a plausible videoId from an RD playlist string
+  String? _extractVideoIdFromRD(String rdId) {
+    if (rdId.isEmpty) return null;
+    // Try simple forms first (RDAMVMvideoId), then more fuzzy matches
+    final afterPrefix = rdId.replaceFirst(RegExp(r'^RDAMVM_?|^RDAMVM'), '');
+    // Look for an alphanumeric id segment (common video id length is 11, but be permissive)
+    final m = RegExp(r'[A-Za-z0-9_-]{8,20}').firstMatch(afterPrefix);
+    if (m != null) return m.group(0);
+    return null;
+  }
+
   Future<List<VideoDetailed>> getPlaylistVideos(String playlistId) async {
     // Special-case: RDAMVM... playlists are 'Up Next' / radio playlists tied to a videoId
     // They are not always browseable via the standard playlist browse endpoint.
-    if (playlistId.startsWith('RDAMVM')) {
-      final videoId = playlistId.replaceFirst('RDAMVM', '');
-      final upNextList = await getUpNexts(videoId);
-      if (upNextList is List<UpNextsDetails>) {
-        return upNextList
-            .map((u) => VideoDetailed(
-                  type: u.type,
-                  videoId: u.videoId,
-                  name: u.title,
-                  artist: u.artists,
-                  duration: u.duration,
-                  thumbnails: u.thumbnails,
-                ))
-            .toList();
-      } else if (upNextList is PaginatedResult<UpNextsDetails>) {
-        return upNextList.items
-            .map((u) => VideoDetailed(
-                  type: u.type,
-                  videoId: u.videoId,
-                  name: u.title,
-                  artist: u.artists,
-                  duration: u.duration,
-                  thumbnails: u.thumbnails,
-                ))
-            .toList();
-      } else {
-        return [];
+    if (playlistId.startsWith('RDAMVM') || playlistId.contains('RDAMVM')) {
+      final videoId = _extractVideoIdFromRD(playlistId);
+      if (videoId != null) {
+        try {
+          final upNextList = await getUpNexts(videoId);
+          if (upNextList is List<UpNextsDetails>) {
+            return upNextList
+                .map((u) => VideoDetailed(
+                      type: u.type,
+                      videoId: u.videoId,
+                      name: u.title,
+                      artist: u.artists,
+                      duration: u.duration,
+                      thumbnails: u.thumbnails,
+                    ))
+                .toList();
+          } else if (upNextList is PaginatedResult<UpNextsDetails>) {
+            return upNextList.items
+                .map((u) => VideoDetailed(
+                      type: u.type,
+                      videoId: u.videoId,
+                      name: u.title,
+                      artist: u.artists,
+                      duration: u.duration,
+                      thumbnails: u.thumbnails,
+                    ))
+                .toList();
+          }
+        } catch (e) {
+          // Fall through and try the browse endpoint fallback below
+          print(
+              'getPlaylistVideos: RDAMVM -> getUpNexts failed for $playlistId: $e');
+        }
+      }
+    }
+
+    // If the RD string contains an embedded 'PL...' playlist id (e.g., 'RDAMPLPLfJC-...'),
+    // extract and recurse on that PL id which is browseable.
+    final plIndex = playlistId.indexOf('PL');
+    if (plIndex >= 0 && plIndex != 0) {
+      final candidate = playlistId.substring(plIndex);
+      if (candidate != playlistId) {
+        try {
+          return await getPlaylistVideos(candidate);
+        } catch (e) {
+          // fallback to normal behavior below if recursion fails
+          print(
+              'getPlaylistVideos: attempted PL-extract fallback failed for $playlistId: $e');
+        }
       }
     }
 

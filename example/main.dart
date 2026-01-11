@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:dart_ytmusic_api/format_helper.dart';
 import 'package:dart_ytmusic_api/yt_music.dart';
 
 void main() async {
@@ -17,6 +18,30 @@ void main() async {
   print('\n=== Related items (sample) ===');
   for (int i = 0; i < (related.length < 10 ? related.length : 10); i++) {
     print(related[i]);
+  }
+
+  // Get best audio format for playback and print result
+  final choice = await ytmusic.getBestAudioFormat('Mc1MZkvMvCk', preferOpus: true);
+  print('\n=== Best audio format ===');
+  print(choice);
+  if (choice.requiresDecipher) {
+    print('Requires decipher, cipher params: ${choice.cipherParams}');
+
+    // Demonstrate using an opt-in decipherer for the example
+    FormatHelper.registerDecipherer((s) async {
+      // WARNING: this is a dummy decipherer for example purposes only.
+      // Real deciphering requires fetching and parsing YouTube player JS.
+      return 'DEMO_DECIPHER';
+    });
+
+    // Resolve again using registered decipherer
+    final resolved = await FormatHelper.resolveFormatUrl(choice.raw);
+    print('After decipher attempt: $resolved');
+
+    // Unregister
+    FormatHelper.registerDecipherer(null);
+  } else {
+    print('Playable URL: ${choice.url}');
   }
 }
 
