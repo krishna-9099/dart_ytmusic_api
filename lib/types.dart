@@ -323,6 +323,28 @@ class PlaylistDetailed implements SearchResult {
             map['mixNavigationEndpoint'] as Map<String, dynamic>?;
 }
 
+class RelatedItem {
+  final String kind; // e.g., 'song', 'playlist', 'album', 'artist'
+  final String id; // videoId or browseId or playlistId
+  final String title;
+  final String subtitle;
+  final List<ThumbnailFull> thumbnails;
+  final Map<String, dynamic>? raw;
+
+  RelatedItem({
+    required this.kind,
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.thumbnails,
+    this.raw,
+  });
+
+  @override
+  String toString() =>
+      'RelatedItem(kind: $kind, id: $id, title: $title, subtitle: $subtitle, thumbnails: ${thumbnails.length})';
+}
+
 class SongFull implements SearchResult {
   @override
   final String type;
@@ -344,6 +366,9 @@ class SongFull implements SearchResult {
     required this.formats,
     required this.adaptiveFormats,
   });
+
+  /// Convenience to get all available formats combined
+  List<dynamic> allFormats() => [...this.formats, ...this.adaptiveFormats];
 
   // Construtor nomeado para criar uma SongFull a partir de um mapa
   SongFull.fromMap(Map<String, dynamic> map)
@@ -739,4 +764,36 @@ class HomeSection {
   HomeSection.fromMap(Map<String, dynamic> map)
       : title = map['title'] as String,
         contents = map['contents'] as List<dynamic>;
+}
+
+class FormatChoice {
+  final String? url;
+  final String mimeType;
+  final int? bitrate;
+  final String? audioQuality;
+  final int? itag;
+  final int? approxDurationMs;
+  final bool requiresDecipher;
+  final Map<String, String>? cipherParams;
+  final DateTime? expiresAt;
+  final Map<String, dynamic>? raw;
+
+  FormatChoice(
+      {this.url,
+      required this.mimeType,
+      this.bitrate,
+      this.audioQuality,
+      this.itag,
+      this.approxDurationMs,
+      this.requiresDecipher = false,
+      this.cipherParams,
+      this.expiresAt,
+      this.raw});
+
+  factory FormatChoice.empty() =>
+      FormatChoice(mimeType: '', requiresDecipher: false);
+
+  @override
+  String toString() =>
+      'FormatChoice(mimeType: $mimeType, bitrate: $bitrate, url: ${url != null ? url!.split('?').first : null}, requiresDecipher: $requiresDecipher)';
 }

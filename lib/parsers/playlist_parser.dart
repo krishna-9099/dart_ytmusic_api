@@ -228,7 +228,7 @@ class PlaylistParser {
                     RegExp(r'(\d+(?:,\d+)*)\s+views?').firstMatch(item);
                 if (match != null) {
                   return int.tryParse(
-                          match.group(1)?.replaceAll(',', '') ?? '0');
+                      match.group(1)?.replaceAll(',', '') ?? '0');
                 }
               }
             }
@@ -367,7 +367,7 @@ class PlaylistParser {
       playlistId: playlistId,
       name: name,
       artist: artistBasic,
-      thumbnails: traverseList(actualItem, ["thumbnail", "thumbnails"]) 
+      thumbnails: traverseList(actualItem, ["thumbnail", "thumbnails"])
           .map((item) => ThumbnailFull.fromMap(item))
           .toList(),
       views: views,

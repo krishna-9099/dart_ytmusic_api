@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:dart_ytmusic_api/yt_music.dart';
 
 void main() async {
@@ -7,7 +9,15 @@ void main() async {
   // Initialize the API
   await ytmusic.initialize();
 
-  await searchSongs(ytmusic);
+  await getUpNexts(ytmusic);
+  await inspectWatchTabs(ytmusic);
+  await fetchRelatedBrowse(ytmusic);
+  // Use the new public method
+  final related = await ytmusic.getRelated('Mc1MZkvMvCk');
+  print('\n=== Related items (sample) ===');
+  for (int i = 0; i < (related.length < 10 ? related.length : 10); i++) {
+    print(related[i]);
+  }
 }
 
 // Search Methods
@@ -69,7 +79,7 @@ Future<void> getSong(YTMusic ytmusic) async {
 
 /// Retrieves up next songs for a given video ID and prints the results.
 Future<void> getUpNexts(YTMusic ytmusic) async {
-  final results = await ytmusic.getUpNexts('LDY4Bf8Zwn8');
+  final results = await ytmusic.getUpNexts('Mc1MZkvMvCk');
   for (final result in results) {
     print('${result.title} - ${result.artists} - ${result.videoId}');
   }
@@ -140,5 +150,41 @@ Future<void> getHomeSections(YTMusic ytmusic) async {
   final results = await ytmusic.getHomeSections();
   for (final result in results) {
     print('${result.title} - ${result.contents}');
+  }
+}
+
+Future<void> inspectWatchTabs(YTMusic ytmusic) async {
+  final data =
+      await ytmusic.constructRequest('next', body: {'videoId': 'Mc1MZkvMvCk'});
+  final tabs = data?['contents']?['singleColumnMusicWatchNextResultsRenderer']
+      ?['tabbedRenderer']?['watchNextTabbedResultsRenderer']?['tabs'];
+  if (tabs is! List) {
+    print('No tabs found in next response');
+    return;
+  }
+  print('Found ${tabs.length} tabs:');
+  for (int i = 0; i < tabs.length; i++) {
+    final tr = tabs[i]?['tabRenderer'];
+    final title = tr?['title'] ?? '<no title>';
+    final content = tr?['content'];
+    final contentKeys = content is Map ? content.keys.toList() : [];
+    final browseId = tr?['endpoint']?['browseEndpoint']?['browseId'];
+    print('Tab $i: title=$title, contentKeys=$contentKeys, browseId=$browseId');
+  }
+}
+
+Future<void> fetchRelatedBrowse(YTMusic ytmusic) async {
+  final browseId = 'MPTRt_TD6HKbxNPge-1';
+  final data =
+      await ytmusic.constructRequest('browse', body: {'browseId': browseId});
+  final filePath = 'example_related_browse.json';
+  File(filePath).writeAsStringSync(jsonEncode(data));
+  final items = data?['contents']?['singleColumnBrowseResultsRenderer']?['tabs']
+      ?[0]?['tabRenderer']?['content']?['sectionListRenderer']?['contents'];
+  if (items is List) {
+    print(
+        'Related browse has ${items.length} top-level sections; sample keys: ${items.isNotEmpty ? items[0].keys.toList() : []}');
+  } else {
+    print('Related browse saved to $filePath');
   }
 }

@@ -10,6 +10,8 @@ import 'package:dart_ytmusic_api/parsers/playlist_parser.dart';
 import 'package:dart_ytmusic_api/parsers/search_parser.dart';
 import 'package:dart_ytmusic_api/parsers/song_parser.dart';
 import 'package:dart_ytmusic_api/parsers/video_parser.dart';
+import 'package:dart_ytmusic_api/parsers/related_parser.dart';
+import 'package:dart_ytmusic_api/format_helper.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 import 'package:http/http.dart' as http;
@@ -326,10 +328,8 @@ class YTMusic {
         hasNext = true;
       }
 
-      final parsedResults = results
-          .map(SearchParser.parse)
-          .cast<SearchResult>()
-          .toList();
+      final parsedResults =
+          results.map(SearchParser.parse).cast<SearchResult>().toList();
 
       return PaginatedResult<SearchResult>(
           parsedResults, nextToken, hasNext, parsedResults.length);
@@ -341,10 +341,8 @@ class YTMusic {
       } else if (continuation is List && continuation.isEmpty) {
         continuation = null;
       }
-      final parsedResults = results
-          .map(SearchParser.parse)
-          .cast<SearchResult>()
-          .toList();
+      final parsedResults =
+          results.map(SearchParser.parse).cast<SearchResult>().toList();
 
       while (continuation != null) {
         final nextData = await constructRequest(
@@ -988,6 +986,17 @@ class YTMusic {
     return video;
   }
 
+  /// Select the best available audio format for playback for a given videoId.
+  /// Returns a [FormatChoice] which may indicate `requiresDecipher=true` when the URL
+  /// is behind a signature cipher. Does not implement deciphering.
+  Future<FormatChoice> getBestAudioFormat(String videoId,
+      {bool preferOpus = true, int? maxBitrate}) async {
+    final song = await getSong(videoId);
+    final all = [...song.formats, ...song.adaptiveFormats];
+    return FormatHelper.selectBestAudioFormat(all,
+        preferOpus: preferOpus, maxBitrate: maxBitrate);
+  }
+
   /// Retrieves the lyrics of a song given its video ID.
   Future<String?> getLyrics(String videoId) async {
     if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
@@ -1038,6 +1047,44 @@ class YTMusic {
     }
 
     return TimedLyricsRes.fromMap(timedLyrics);
+  }
+
+  /// Retrieves a canonical list of related items from the "Related" watch tab for the given video.
+  Future<List<RelatedItem>> getRelated(String videoId) async {
+    if (!RegExp(r"^[a-zA-Z0-9-_]{11}$").hasMatch(videoId)) {
+      throw Exception("Invalid videoId");
+    }
+
+    final data = await constructRequest("next", body: {"videoId": videoId});
+
+    final tabs = data?['contents']?['singleColumnMusicWatchNextResultsRenderer']
+        ?['tabbedRenderer']?['watchNextTabbedResultsRenderer']?['tabs'];
+
+    if (tabs is! List) {
+      throw Exception("Invalid response structure");
+    }
+
+    String? browseId;
+    for (final t in tabs) {
+      final tr = t?['tabRenderer'];
+      final title = tr?['title'];
+      if (title != null && title.toString().toLowerCase() == 'related') {
+        browseId = tr?['endpoint']?['browseEndpoint']?['browseId'];
+        if (browseId == null) {
+          browseId = tr?['endpoint']?['navigationEndpoint']?['browseEndpoint']
+              ?['browseId'];
+        }
+        break;
+      }
+    }
+
+    if (browseId == null || (browseId is String && browseId.isEmpty)) {
+      throw Exception('Related tab not found');
+    }
+
+    final browseData =
+        await constructRequest('browse', body: {'browseId': browseId});
+    return RelatedParser.parseRelatedBrowse(browseData);
   }
 
   /// Retrieves detailed information about an artist given its artist ID.
@@ -1227,6 +1274,38 @@ class YTMusic {
 
   /// Retrieves a list of videos from a playlist given its playlist ID.
   Future<List<VideoDetailed>> getPlaylistVideos(String playlistId) async {
+    // Special-case: RDAMVM... playlists are 'Up Next' / radio playlists tied to a videoId
+    // They are not always browseable via the standard playlist browse endpoint.
+    if (playlistId.startsWith('RDAMVM')) {
+      final videoId = playlistId.replaceFirst('RDAMVM', '');
+      final upNextList = await getUpNexts(videoId);
+      if (upNextList is List<UpNextsDetails>) {
+        return upNextList
+            .map((u) => VideoDetailed(
+                  type: u.type,
+                  videoId: u.videoId,
+                  name: u.title,
+                  artist: u.artists,
+                  duration: u.duration,
+                  thumbnails: u.thumbnails,
+                ))
+            .toList();
+      } else if (upNextList is PaginatedResult<UpNextsDetails>) {
+        return upNextList.items
+            .map((u) => VideoDetailed(
+                  type: u.type,
+                  videoId: u.videoId,
+                  name: u.title,
+                  artist: u.artists,
+                  duration: u.duration,
+                  thumbnails: u.thumbnails,
+                ))
+            .toList();
+      } else {
+        return [];
+      }
+    }
+
     if (playlistId.startsWith("PL") || playlistId.startsWith("RD")) {
       playlistId = "VL$playlistId";
     }
@@ -1238,18 +1317,24 @@ class YTMusic {
       playlistData,
       ["musicPlaylistShelfRenderer", "musicResponsiveListItemRenderer"],
     );
+
     dynamic continuation = traverse(playlistData, ["continuation"]);
     if (continuation is List) {
-      continuation = continuation[0];
+      continuation = continuation.isNotEmpty ? continuation[0] : null;
     }
-    while (continuation is! List) {
+
+    while (continuation != null) {
       final songsData = await constructRequest(
         "browse",
         query: {"continuation": continuation},
       );
       songs
           .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
+
       continuation = traverse(songsData, ["continuation"]);
+      if (continuation is List) {
+        continuation = continuation.isNotEmpty ? continuation[0] : null;
+      }
     }
 
     return songs

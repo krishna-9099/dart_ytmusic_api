@@ -253,10 +253,29 @@ for (final r in related) {
 
 A saved sample response used for tests and development can be found at `example_related_browse.json` in the project root.
 
+### Streaming format helper (best audio)
+
+You can select the best available audio format for playback using `getBestAudioFormat(videoId)`.
+
+```dart
+final ytmusic = YTMusic();
+await ytmusic.initialize();
+final choice = await ytmusic.getBestAudioFormat('Mc1MZkvMvCk', preferOpus: true);
+if (choice.requiresDecipher) {
+  // The returned format is protected by a signature cipher; you may need to
+  // perform player-style deciphering to obtain a working URL.
+  print('Format requires decipher: ${choice.cipherParams}');
+} else {
+  print('Playable URL: ${choice.url}');
+}
+```
+
+Notes:
+- The package includes a non-deciphering URL resolver: `FormatHelper.resolveFormatUrl(format)` which will parse `url` or `signatureCipher` fields and indicate whether deciphering is required. The library does not perform automatic deciphering by default (to avoid maintenance and legal concerns), but you can implement or plug in a decipherer if desired.
+
 ## Known Issues
 
-- **`getPlaylistVideos` is not working as expected.** The method currently returns an "Invalid request" error. This issue is under investigation.
-- **RD playlist IDs have limited support.** Playlist IDs starting with "RD" (Radio/Recommended playlists) now work with `getPlaylist()` method thanks to a fix that treats them the same as regular playlists by adding a "VL" prefix for the browse request. However, `getPlaylistVideos()` still doesn't support RD playlist IDs due to different endpoint requirements. RD playlist IDs are used internally by the `getUpNexts()` method with the format `RDAMVM${videoId}` for retrieving up next songs.
+- **`getPlaylistVideos` RD support improved.** `getPlaylistVideos()` now supports many RD playlist ID formats including `RDCL...` and `RDAMVM...` (the latter maps to the Up Next radio list). Some RD variants (non-standard internal formats) may still fail; in those cases the method will surface the error and clients should fall back to other means (e.g., `getPlaylistWithRelated()` or `getUpNexts()`).
 
   **Note:** This was a known limitation across YouTube Music API implementations. A similar issue was reported in the original TypeScript library ([ts-npm-ytmusic-api#57](https://github.com/zS1L3NT/ts-npm-ytmusic-api/issues/57)), and a fix was implemented in a fork that treats RD playlists the same as regular playlists by adding a "VL" prefix for the browse request. This approach has now been applied to this Dart implementation.
 

@@ -1,3 +1,7 @@
+## 1.3.7
+**Fix**
+- Fixed `getPlaylistVideos` RD support: `RDAMVM...` playlist IDs (Up Next/radio playlists) are now supported by mapping them to `getUpNexts()` and returning the expected video list. Also fixed continuation handling to avoid malformed continuation loops.
+
 ## 1.3.6
 **Fix**
 - Critical API crash on non-English systems: Resolved a FormatException that prevented the application from working on operating systems with non-English locales (e.g., Portuguese, Spanish). The issue was caused by an invalid timezone format in API request headers.
