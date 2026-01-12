@@ -2,6 +2,7 @@
 /// decipher functions. This keeps all decipher-related logic isolated from the
 /// rest of `lib/` for easier maintenance and future expansion (e.g. JS
 /// extraction, automated fetchers, etc.).
+library;
 
 typedef DecipherFn = Future<String> Function(String s);
 

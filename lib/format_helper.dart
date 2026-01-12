@@ -18,7 +18,7 @@ class FormatUrlResult {
 
   @override
   String toString() =>
-      'FormatUrlResult(url: ${url != null ? url!.split('?').first : null}, requiresDecipher: $requiresDecipher, expiresAt: $expiresAt)';
+      'FormatUrlResult(url: ${url?.split('?').first}, requiresDecipher: $requiresDecipher, expiresAt: $expiresAt)';
 }
 
 class FormatHelper {
@@ -55,8 +55,9 @@ class FormatHelper {
       final exp = u.queryParameters['expire'] ?? u.queryParameters['exp'];
       if (exp != null) {
         final secs = int.tryParse(exp);
-        if (secs != null)
+        if (secs != null) {
           return DateTime.fromMillisecondsSinceEpoch(secs * 1000);
+        }
       }
     } catch (e) {
       // ignore
@@ -173,10 +174,11 @@ class FormatHelper {
 
     for (final f in normalized) {
       final mime = f['mimeType'] as String? ?? f['mime'] as String? ?? '';
-      if (mime.contains('audio/'))
+      if (mime.contains('audio/')) {
         audioOnly.add(f);
-      else
+      } else {
         mixed.add(f);
+      }
     }
 
     final candidates = audioOnly.isNotEmpty ? audioOnly : mixed;
@@ -191,11 +193,13 @@ class FormatHelper {
 
       // prefer opus
       if (preferOpus &&
-          (codecContains(codecs, 'opus') || mime.contains('webm'))) s += 1000;
+          (codecContains(codecs, 'opus') || mime.contains('webm'))) {
+        s += 1000;
+      }
       // prefer higher audioQuality
-      if (audioQuality.toLowerCase().contains('high'))
+      if (audioQuality.toLowerCase().contains('high')) {
         s += 800;
-      else if (audioQuality.toLowerCase().contains('medium')) s += 400;
+      } else if (audioQuality.toLowerCase().contains('medium')) s += 400;
       // prefer higher bitrate
       s += (bitrate ~/ 1000);
 
@@ -206,8 +210,9 @@ class FormatHelper {
       }
 
       // penalize above maxBitrate
-      if (maxBitrate != null && bitrate > maxBitrate)
+      if (maxBitrate != null && bitrate > maxBitrate) {
         s -= (bitrate - maxBitrate) ~/ 1000;
+      }
 
       return s;
     }

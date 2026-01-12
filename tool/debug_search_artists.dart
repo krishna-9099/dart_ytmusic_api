@@ -54,7 +54,7 @@ void main() async {
           print('First section keys: ${(firstSection as Map).keys}');
 
           // Print renderer keys in first section
-          for (final k in (firstSection as Map).keys) {
+          for (final k in (firstSection).keys) {
             print('- renderer key: $k');
           }
 

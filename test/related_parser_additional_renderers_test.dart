@@ -1,5 +1,4 @@
 import 'package:dart_ytmusic_api/parsers/related_parser.dart';
-import 'package:dart_ytmusic_api/types.dart';
 import 'package:test/test.dart';
 
 void main() {

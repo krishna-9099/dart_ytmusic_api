@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
 import 'package:dart_ytmusic_api/yt_music.dart';
-import 'package:dart_ytmusic_api/types.dart';
 
 void main() {
   test('getPlaylistVideos handles various RD playlist ID formats', () async {

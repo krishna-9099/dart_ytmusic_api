@@ -4,7 +4,7 @@ import 'decipherer.dart';
 
 typedef Op = Map<String, dynamic>;
 
-afterThrow(String s) {}
+void afterThrow(String s) {}
 
 /// Prototype extractor for YouTube player JS signature transforms.
 ///
@@ -73,7 +73,7 @@ class PlayerJsExtractor {
       int? arg;
       // choose the last numeric token as likely the relevant arg
       final nums = RegExp(r"-?\d+").allMatches(argText).map((mm) => int.tryParse(mm.group(0)!)).where((x) => x != null).toList();
-      if (nums.isNotEmpty) arg = nums.last as int?;
+      if (nums.isNotEmpty) arg = nums.last;
       entries.add({
         'start': m.start,
         'type': 'param',
@@ -120,8 +120,9 @@ class PlayerJsExtractor {
           }
         }
 
-        if (opType == 'reverse') ops.add({'op': 'reverse'});
-        else if (opType == 'splice' || opType == 'slice') ops.add({'op': opType, 'arg': arg ?? 0});
+        if (opType == 'reverse') {
+          ops.add({'op': 'reverse'});
+        } else if (opType == 'splice' || opType == 'slice') ops.add({'op': opType, 'arg': arg ?? 0});
         else if (opType == 'swap') ops.add({'op': 'swap', 'arg': arg ?? 0});
         // unknown helper method -> skip
       }

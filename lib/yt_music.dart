@@ -1073,15 +1073,13 @@ class YTMusic {
       final title = tr?['title'];
       if (title != null && title.toString().toLowerCase() == 'related') {
         browseId = tr?['endpoint']?['browseEndpoint']?['browseId'];
-        if (browseId == null) {
-          browseId = tr?['endpoint']?['navigationEndpoint']?['browseEndpoint']
+        browseId ??= tr?['endpoint']?['navigationEndpoint']?['browseEndpoint']
               ?['browseId'];
-        }
         break;
       }
     }
 
-    if (browseId == null || (browseId is String && browseId.isEmpty)) {
+    if (browseId == null || (browseId.isEmpty)) {
       throw Exception('Related tab not found');
     }
 

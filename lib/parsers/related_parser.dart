@@ -55,8 +55,9 @@ class RelatedParser {
       'browseEndpoint',
       'browseId'
     ]);
-    if (browseList.isNotEmpty && browseList.first is String)
+    if (browseList.isNotEmpty && browseList.first is String) {
       return browseList.first as String;
+    }
     return null;
   }
 
@@ -97,8 +98,9 @@ class RelatedParser {
               'watchEndpoint',
               'videoId'
             ]);
-            if (watchList.isNotEmpty && watchList.first is String)
+            if (watchList.isNotEmpty && watchList.first is String) {
               vid = watchList.first as String;
+            }
           }
 
           final thumbs = _extractThumbnails(renderer);
@@ -136,17 +138,16 @@ class RelatedParser {
             'browseEndpoint',
             'browseId'
           ]);
-          if (browseId == null)
-            browseId = traverse(
+          browseId ??= traverse(
                 renderer, ['navigationEndpoint', 'browseEndpoint', 'browseId']);
 
           String id = '';
           String kind = 'unknown';
           if (browseId is String) {
             id = browseId;
-            if (id.startsWith('UC'))
+            if (id.startsWith('UC')) {
               kind = 'artist';
-            else if (id.startsWith('PL') ||
+            } else if (id.startsWith('PL') ||
                 id.startsWith('OL') ||
                 id.startsWith('RD'))
               kind = 'playlist';

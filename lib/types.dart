@@ -368,7 +368,7 @@ class SongFull implements SearchResult {
   });
 
   /// Convenience to get all available formats combined
-  List<dynamic> allFormats() => [...this.formats, ...this.adaptiveFormats];
+  List<dynamic> allFormats() => [...formats, ...adaptiveFormats];
 
   // Construtor nomeado para criar uma SongFull a partir de um mapa
   SongFull.fromMap(Map<String, dynamic> map)
@@ -795,5 +795,5 @@ class FormatChoice {
 
   @override
   String toString() =>
-      'FormatChoice(mimeType: $mimeType, bitrate: $bitrate, url: ${url != null ? url!.split('?').first : null}, requiresDecipher: $requiresDecipher)';
+      'FormatChoice(mimeType: $mimeType, bitrate: $bitrate, url: ${url?.split('?').first}, requiresDecipher: $requiresDecipher)';
 }
