@@ -22,7 +22,11 @@ class PlayerJsExtractor {
     // Helper to find a helper object's body by name (var/let/const or assignment)
     String? findHelperBody(String name) {
       final patterns = [
-        RegExp(r"(?:var|let|const)\s+" + RegExp.escape(name) + r"\s*=\s*\{([\s\S]*?)\};", multiLine: true),
+        RegExp(
+            r"(?:var|let|const)\s+" +
+                RegExp.escape(name) +
+                r"\s*=\s*\{([\s\S]*?)\};",
+            multiLine: true),
         RegExp(RegExp.escape(name) + r"\s*=\s*\{([\s\S]*?)\};", multiLine: true)
       ];
       for (final p in patterns) {
@@ -34,16 +38,29 @@ class PlayerJsExtractor {
 
     // Infer op type from a method's body string
     String? inferOpFromMethodBody(String body) {
-      if (body.contains('reverse')) return 'reverse';
-      if (body.contains('splice')) return 'splice';
-      if (body.contains('slice')) return 'slice';
-      if (RegExp(r'var\s+\w+\s*=\s*\w+\[\s*0\s*\]').hasMatch(body) || (body.contains('a[0') && body.contains('a[b'))) return 'swap';
+      if (body.contains('reverse')) {
+        return 'reverse';
+      }
+      if (body.contains('splice')) {
+        return 'splice';
+      }
+      if (body.contains('slice')) {
+        return 'slice';
+      }
+      if (RegExp(r'var\s+\w+\s*=\s*\w+\[\s*0\s*\]').hasMatch(body) ||
+          (body.contains('a[0') && body.contains('a[b'))) {
+        return 'swap';
+      }
       return null;
     }
 
     // Find signature function by matching any function that returns <param>.join
-    final sigRe = RegExp(r"function\s+([a-zA-Z0-9\$]+)\s*\(\s*([a-zA-Z0-9_\$]+)\s*\)\s*\{([\s\S]*?)return\s+\2\.join", multiLine: true);
-    final altRe = RegExp(r"var\s+([a-zA-Z0-9\$]+)\s*=\s*function\s*\(\s*([a-zA-Z0-9_\$]+)\s*\)\s*\{([\s\S]*?)return\s+\2\.join", multiLine: true);
+    final sigRe = RegExp(
+        r"function\s+([a-zA-Z0-9\$]+)\s*\(\s*([a-zA-Z0-9_\$]+)\s*\)\s*\{([\s\S]*?)return\s+\2\.join",
+        multiLine: true);
+    final altRe = RegExp(
+        r"var\s+([a-zA-Z0-9\$]+)\s*=\s*function\s*\(\s*([a-zA-Z0-9_\$]+)\s*\)\s*\{([\s\S]*?)return\s+\2\.join",
+        multiLine: true);
 
     Match? sigMatch = sigRe.firstMatch(js) ?? altRe.firstMatch(js);
     if (sigMatch == null) return ops;
@@ -55,7 +72,11 @@ class PlayerJsExtractor {
     final entries = <Map<String, dynamic>>[];
 
     // helper.method(param, arg?) matches
-    final helperCallRe = RegExp(r"([a-zA-Z0-9\$]+)\.([a-zA-Z0-9\$]+)\s*\(\s*" + RegExp.escape(paramName) + r"(?:\s*,\s*([0-9]+))?\s*\)", multiLine: true);
+    final helperCallRe = RegExp(
+        r"([a-zA-Z0-9\$]+)\.([a-zA-Z0-9\$]+)\s*\(\s*" +
+            RegExp.escape(paramName) +
+            r"(?:\s*,\s*([0-9]+))?\s*\)",
+        multiLine: true);
     for (final m in helperCallRe.allMatches(sigBody)) {
       entries.add({
         'start': m.start,
@@ -67,12 +88,18 @@ class PlayerJsExtractor {
     }
 
     // direct param calls like a.reverse(), a.splice(0,2)
-    final paramCallRe = RegExp(r"\b" + RegExp.escape(paramName) + r"\.([a-zA-Z0-9\$]+)\s*\(([^\)]*)\)", multiLine: true);
+    final paramCallRe = RegExp(
+        r"\b" + RegExp.escape(paramName) + r"\.([a-zA-Z0-9\$]+)\s*\(([^\)]*)\)",
+        multiLine: true);
     for (final m in paramCallRe.allMatches(sigBody)) {
       final argText = m.group(2) ?? '';
       int? arg;
       // choose the last numeric token as likely the relevant arg
-      final nums = RegExp(r"-?\d+").allMatches(argText).map((mm) => int.tryParse(mm.group(0)!)).where((x) => x != null).toList();
+      final nums = RegExp(r"-?\d+")
+          .allMatches(argText)
+          .map((mm) => int.tryParse(mm.group(0)!))
+          .where((x) => x != null)
+          .toList();
       if (nums.isNotEmpty) arg = nums.last;
       entries.add({
         'start': m.start,
@@ -108,13 +135,21 @@ class PlayerJsExtractor {
         String? opType;
         if (helperBody != null) {
           // find method body inside helper body
-          final methodRe = RegExp(RegExp.escape(method) + r"\s*:\s*function\s*\([^\)]*\)\s*\{([\s\S]*?)\}", multiLine: true);
+          final methodRe = RegExp(
+              RegExp.escape(method) +
+                  r"\s*:\s*function\s*\([^\)]*\)\s*\{([\s\S]*?)\}",
+              multiLine: true);
           final m = methodRe.firstMatch(helperBody);
           if (m != null) {
             opType = inferOpFromMethodBody(m.group(1) ?? '');
           } else {
             // try assignment style: obj.method=function(...) { ... }
-            final assignRe = RegExp(RegExp.escape(obj) + r"\." + RegExp.escape(method) + r"\s*=\s*function\s*\([^\)]*\)\s*\{([\s\S]*?)\}", multiLine: true);
+            final assignRe = RegExp(
+                RegExp.escape(obj) +
+                    r"\." +
+                    RegExp.escape(method) +
+                    r"\s*=\s*function\s*\([^\)]*\)\s*\{([\s\S]*?)\}",
+                multiLine: true);
             final am = assignRe.firstMatch(js);
             if (am != null) opType = inferOpFromMethodBody(am.group(1) ?? '');
           }
@@ -122,8 +157,11 @@ class PlayerJsExtractor {
 
         if (opType == 'reverse') {
           ops.add({'op': 'reverse'});
-        } else if (opType == 'splice' || opType == 'slice') ops.add({'op': opType, 'arg': arg ?? 0});
-        else if (opType == 'swap') ops.add({'op': 'swap', 'arg': arg ?? 0});
+        } else if (opType == 'splice' || opType == 'slice') {
+          ops.add({'op': opType, 'arg': arg ?? 0});
+        } else if (opType == 'swap') {
+          ops.add({'op': 'swap', 'arg': arg ?? 0});
+        }
         // unknown helper method -> skip
       }
     }

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:core';
 
 import 'package:dart_ytmusic_api/types.dart';
@@ -199,7 +198,9 @@ class FormatHelper {
       // prefer higher audioQuality
       if (audioQuality.toLowerCase().contains('high')) {
         s += 800;
-      } else if (audioQuality.toLowerCase().contains('medium')) s += 400;
+      } else if (audioQuality.toLowerCase().contains('medium')) {
+        s += 400;
+      }
       // prefer higher bitrate
       s += (bitrate ~/ 1000);
 

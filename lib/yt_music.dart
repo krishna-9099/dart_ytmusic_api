@@ -329,7 +329,7 @@ class YTMusic {
       }
 
       final parsedResults =
-          results.map(SearchParser.parse).cast<SearchResult>().toList();
+          results.map(SearchParser.parse).whereType<SearchResult>().toList();
 
       return PaginatedResult<SearchResult>(
           parsedResults, nextToken, hasNext, parsedResults.length);
@@ -342,7 +342,7 @@ class YTMusic {
         continuation = null;
       }
       final parsedResults =
-          results.map(SearchParser.parse).cast<SearchResult>().toList();
+          results.map(SearchParser.parse).whereType<SearchResult>().toList();
 
       while (continuation != null) {
         final nextData = await constructRequest(
@@ -352,7 +352,7 @@ class YTMusic {
         final nextResults =
             traverseList(nextData, ["musicResponsiveListItemRenderer"])
                 .map(SearchParser.parse)
-                .cast<SearchResult>()
+                .whereType<SearchResult>()
                 .toList();
         parsedResults.addAll(nextResults);
 
@@ -1074,7 +1074,7 @@ class YTMusic {
       if (title != null && title.toString().toLowerCase() == 'related') {
         browseId = tr?['endpoint']?['browseEndpoint']?['browseId'];
         browseId ??= tr?['endpoint']?['navigationEndpoint']?['browseEndpoint']
-              ?['browseId'];
+            ?['browseId'];
         break;
       }
     }

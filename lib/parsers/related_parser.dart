@@ -45,22 +45,6 @@ class RelatedParser {
     return texts.first;
   }
 
-  static String? _getArtistBrowseIdFromFlex(dynamic node) {
-    final browseList = traverseList(node, [
-      'flexColumns',
-      'musicResponsiveListItemFlexColumnRenderer',
-      'text',
-      'runs',
-      'navigationEndpoint',
-      'browseEndpoint',
-      'browseId'
-    ]);
-    if (browseList.isNotEmpty && browseList.first is String) {
-      return browseList.first as String;
-    }
-    return null;
-  }
-
   /// Parse a browse response (Related tab) and return a canonical list of RelatedItem
   static List<RelatedItem> parseRelatedBrowse(dynamic data) {
     final items = <RelatedItem>[];
@@ -139,7 +123,7 @@ class RelatedParser {
             'browseId'
           ]);
           browseId ??= traverse(
-                renderer, ['navigationEndpoint', 'browseEndpoint', 'browseId']);
+              renderer, ['navigationEndpoint', 'browseEndpoint', 'browseId']);
 
           String id = '';
           String kind = 'unknown';
@@ -149,10 +133,11 @@ class RelatedParser {
               kind = 'artist';
             } else if (id.startsWith('PL') ||
                 id.startsWith('OL') ||
-                id.startsWith('RD'))
+                id.startsWith('RD')) {
               kind = 'playlist';
-            else
+            } else {
               kind = 'album_or_playlist';
+            }
           }
 
           final thumbs = _extractThumbnails(renderer);
